@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # 🔒 Setup Domain & SSL Gratis (HTTPS Certbot + Nginx) untuk Booth Lead Capture
 # Penggunaan: ./setup-ssl.sh namadomain.com
@@ -54,7 +54,8 @@ EOF
 ln -sf /etc/nginx/sites-available/booth.conf /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default || true
 nginx -t
-systemctl reload nginx
+systemctl enable --now nginx
+systemctl restart nginx
 echo "✅ Konfigurasi Nginx berhasil diaktifkan!"
 
 # 4. Pasang SSL Gratis dengan Let's Encrypt
