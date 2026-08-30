@@ -19,40 +19,66 @@ export interface TranslationDict {
   kioskVenue: string;
   welcomeTitle: string;
   welcomeSub: string;
+  heroWelcome: string;
+  heroDesc: string;
   ctaFill: string;
   ctaFillSub: string;
+  btnRegister: string;
+  btnRegisterSub: string;
   qrHint: string;
   qrLabel: string;
   qrUpdate: string;
+  qrLiveBadge: string;
+  qrHeaderTitle: string;
+  qrHeaderSubtitle: string;
   dateRange: string;
+  exhibitionDate: string;
   poweredBy: string;
   formBrand: string;
   formTitle: string;
   formSubtitle: string;
   offlineBanner: string;
   thankYou: string;
+  thankYouTitle: string;
+  thankYouSubtitle: string;
   statusOnlineMsg: string;
   statusOfflineMsg: string;
   fillAgain: string;
+  btnFillAgain: string;
   labelName: string;
+  fullNameLabel: string;
   placeholderName: string;
+  fullNamePlaceholder: string;
   labelCompany: string;
+  companyLabel: string;
   placeholderCompany: string;
+  companyPlaceholder: string;
   labelContact: string;
+  whatsappLabel: string;
   placeholderContact: string;
+  whatsappPlaceholder: string;
   labelEmail: string;
+  emailLabel: string;
   placeholderEmail: string;
+  emailPlaceholder: string;
   labelCity: string;
+  cityLabel: string;
   placeholderCity: string;
+  cityPlaceholder: string;
   labelInterest: string;
+  interestsLabel: string;
   labelNotes: string;
   placeholderNotes: string;
   labelSignature: string;
   showSignature: string;
   hideSignature: string;
+  sigToggleShow: string;
+  sigToggleHide: string;
   clearSignature: string;
   submitBtn: string;
   submittingBtn: string;
+  btnSubmit: string;
+  btnSubmitting: string;
   simOfflineOn: string;
   simOfflineOff: string;
   statTotal: string;
@@ -120,41 +146,67 @@ export const DICT: Record<Language, TranslationDict> = {
     kioskBrand: 'SpillAsia 2026',
     kioskVenue: 'Jakarta Convention Center',
     welcomeTitle: 'Selamat Datang di Booth Kami',
-    welcomeSub: 'Silakan isi buku tamu untuk mendapatkan katalog produk & konsultasi langsung.',
+    welcomeSub: 'Silakan isi buku tamu untuk mendapatkan katalog produk & konsultasi langsung bersama tim ahli kami.',
+    heroWelcome: 'Selamat Datang di Booth Kami',
+    heroDesc: 'Silakan isi buku tamu untuk mendapatkan katalog produk & konsultasi langsung bersama tim ahli kami.',
     ctaFill: 'Isi Buku Tamu',
     ctaFillSub: 'Sentuh untuk mulai pengisian di tablet',
-    qrHint: 'atau scan QR di samping dari HP Anda',
-    qrLabel: 'QR Code Dinamis',
+    btnRegister: 'Isi Buku Tamu',
+    btnRegisterSub: 'Sentuh untuk mulai pengisian di tablet',
+    qrHint: 'Pindai QR Code di samping menggunakan kamera smartphone Anda untuk mengisi formulir digital langsung dari HP.',
+    qrLabel: 'Pindai untuk Isi dari HP',
     qrUpdate: 'Diperbarui secara real-time',
+    qrLiveBadge: 'Diperbarui secara real-time',
+    qrHeaderTitle: 'Pindai untuk Isi dari HP',
+    qrHeaderSubtitle: 'Pindai QR Code di atas menggunakan kamera smartphone Anda untuk mengisi formulir digital langsung dari HP.',
     dateRange: '09 – 11 Sept 2026',
+    exhibitionDate: '09 – 11 Sept 2026',
     poweredBy: 'Powered by SpillAsia Digital Booth',
     formBrand: 'SpillAsia 2026',
-    formTitle: 'Buku Tamu Digital',
+    formTitle: 'Buku Tamu Pengunjung',
     formSubtitle: 'Terima kasih telah mengunjungi booth kami. Silakan lengkapi formulir di bawah ini.',
     offlineBanner: 'Mode Offline — data disimpan lokal & akan sinkron otomatis',
-    thankYou: 'Terima kasih!',
+    thankYou: 'Terima Kasih atas Kunjungan Anda!',
+    thankYouTitle: 'Terima Kasih atas Kunjungan Anda!',
+    thankYouSubtitle: 'Data Anda telah tersimpan. Tim kami akan segera mengirimkan materi presentasi dan katalog produk pilihan Anda.',
     statusOnlineMsg: 'Data Anda telah tersimpan dan tersinkron secara real-time.',
     statusOfflineMsg: 'Data tersimpan aman di perangkat ini dan akan tersinkron otomatis begitu koneksi tersedia.',
-    fillAgain: 'Isi Lagi',
+    fillAgain: 'Isi Buku Tamu Lagi',
+    btnFillAgain: 'Isi Buku Tamu Lagi',
     labelName: 'Nama Lengkap',
+    fullNameLabel: 'Nama Lengkap',
     placeholderName: 'cth. Andi Pratama',
-    labelCompany: 'Asal Perusahaan',
+    fullNamePlaceholder: 'cth. Andi Pratama',
+    labelCompany: 'Asal Perusahaan / Instansi',
+    companyLabel: 'Asal Perusahaan / Instansi',
     placeholderCompany: 'cth. PT Petrokimia Nusantara',
+    companyPlaceholder: 'cth. PT Petrokimia Nusantara',
     labelContact: 'Nomor WhatsApp',
+    whatsappLabel: 'Nomor WhatsApp',
     placeholderContact: 'cth. 0812-3456-7890',
+    whatsappPlaceholder: 'cth. 0812-3456-7890',
     labelEmail: 'Alamat Email (Opsional)',
+    emailLabel: 'Alamat Email (Opsional)',
     placeholderEmail: 'cth. andi@petrokimia.co.id',
+    emailPlaceholder: 'cth. andi@petrokimia.co.id',
     labelCity: 'Kota / Domisili',
+    cityLabel: 'Kota / Domisili',
     placeholderCity: 'cth. Jakarta',
+    cityPlaceholder: 'cth. Jakarta',
     labelInterest: 'Pilihan Minat Produk',
+    interestsLabel: 'Pilihan Minat Produk',
     labelNotes: 'Catatan / Kebutuhan Khusus',
     placeholderNotes: 'Tuliskan kebutuhan atau pertanyaan Anda di sini...',
     labelSignature: 'Tanda Tangan Digital (Opsional)',
     showSignature: '+ Tambah Tanda Tangan Digital',
     hideSignature: 'Sembunyikan Tanda Tangan',
+    sigToggleShow: '+ Tambah Tanda Tangan Digital',
+    sigToggleHide: 'Sembunyikan Tanda Tangan',
     clearSignature: 'Hapus Tanda Tangan',
-    submitBtn: 'Kirim & Simpan',
+    submitBtn: 'Kirim & Simpan Data',
     submittingBtn: 'Menyimpan Data...',
+    btnSubmit: 'Kirim & Simpan Data',
+    btnSubmitting: 'Menyimpan Data...',
     simOfflineOn: 'Nonaktifkan simulasi offline',
     simOfflineOff: 'Simulasikan mode offline',
     statTotal: 'Total Pengunjung',
@@ -172,23 +224,23 @@ export const DICT: Record<Language, TranslationDict> = {
     colSync: 'Sync',
     colTime: 'Waktu',
     colAction: 'Aksi',
-    interestPanelTitle: 'Minat Produk',
-    sourcePanelTitle: 'Sumber Data',
-    sourceKioskLabel: 'Kiosk Tablet',
+    interestPanelTitle: 'Distribusi Minat Produk',
+    sourcePanelTitle: 'Sumber Data Registrasi',
+    sourceKioskLabel: 'Kiosk Tablet Meja',
     sourceHpLabel: 'Scan HP Pengunjung',
-    syncStatusTitle: 'Status Sinkronisasi',
+    syncStatusTitle: 'Status Sinkronisasi Real-time',
     syncConnected: 'Server Realtime DB — Terhubung',
     syncDisconnected: 'Server Terputus — Mode Offline Aktif',
     syncPendingEntries: 'entri lokal menunggu koneksi',
     syncLastAuto: 'Sync otomatis terakhir:',
     badgeKiosk: 'Kiosk',
-    badgeHp: 'HP',
+    badgeHp: 'Scan HP',
     badgeSynced: 'Tersinkron',
     badgePending: 'Menunggu',
     syncOnlineBadge: 'Tersinkron · online',
     syncOfflineBadge: 'data lokal · belum sync',
     forceSyncBtn: 'Sinkronkan Sekarang',
-    exportExcel: 'Ekspor Excel',
+    exportExcel: 'Ekspor Excel (.xlsx)',
     exportCsv: 'Ekspor CSV',
     searchPlaceholder: 'Cari nama, perusahaan, WhatsApp, kota...',
     allInterests: 'Semua Minat',
@@ -197,7 +249,7 @@ export const DICT: Record<Language, TranslationDict> = {
     directWhatsapp: 'Hubungi WhatsApp',
     deleteLead: 'Hapus',
     confirmDelete: 'Apakah Anda yakin ingin menghapus data ini?',
-    settingsTitle: 'Pengaturan Booth',
+    settingsTitle: 'Pengaturan Booth & Pameran',
     adminPinPrompt: 'Masukkan PIN Admin untuk mengakses dashboard',
     enterPin: 'Masukkan PIN (Default: 1234)',
     unlockAdmin: 'Buka Dashboard'
@@ -220,49 +272,75 @@ export const DICT: Record<Language, TranslationDict> = {
     kioskBrand: 'SpillAsia 2026',
     kioskVenue: 'Jakarta Convention Center',
     welcomeTitle: 'Welcome to Our Booth',
-    welcomeSub: 'Please sign our guest book to receive product catalogs & direct consultation.',
+    welcomeSub: 'Please sign our guest book to receive product catalogs & direct consultation with our experts.',
+    heroWelcome: 'Welcome to Our Booth',
+    heroDesc: 'Please sign our guest book to receive product catalogs & direct consultation with our experts.',
     ctaFill: 'Sign Guest Book',
     ctaFillSub: 'Touch to start on tablet',
-    qrHint: 'or scan the QR beside it with your phone',
-    qrLabel: 'Dynamic QR Code',
+    btnRegister: 'Sign Guest Book',
+    btnRegisterSub: 'Touch to start on tablet',
+    qrHint: 'Scan the QR Code above with your smartphone camera to fill out the registration form directly on your phone.',
+    qrLabel: 'Scan with Smartphone',
     qrUpdate: 'Refreshes in real-time',
+    qrLiveBadge: 'Refreshes in real-time',
+    qrHeaderTitle: 'Scan with Smartphone',
+    qrHeaderSubtitle: 'Scan the QR Code above with your smartphone camera to fill out the registration form directly on your phone.',
     dateRange: 'Sept 09 – 11, 2026',
+    exhibitionDate: 'Sept 09 – 11, 2026',
     poweredBy: 'Powered by SpillAsia Digital Booth',
     formBrand: 'SpillAsia 2026',
-    formTitle: 'Digital Guest Book',
+    formTitle: 'Visitor Guest Book',
     formSubtitle: 'Thank you for visiting our booth. Please complete the form below.',
     offlineBanner: 'Offline Mode — data saved locally & will sync automatically',
-    thankYou: 'Thank you!',
+    thankYou: 'Thank You for Visiting!',
+    thankYouTitle: 'Thank You for Visiting!',
+    thankYouSubtitle: 'Your details have been saved. Our team will send presentation materials and product catalogs to your contact.',
     statusOnlineMsg: 'Your data has been saved and synced in real-time.',
     statusOfflineMsg: 'Data is safely stored on this device and will sync automatically once connected.',
-    fillAgain: 'Fill Again',
+    fillAgain: 'Fill Guest Book Again',
+    btnFillAgain: 'Fill Guest Book Again',
     labelName: 'Full Name',
+    fullNameLabel: 'Full Name',
     placeholderName: 'e.g. Andi Pratama',
-    labelCompany: 'Company',
+    fullNamePlaceholder: 'e.g. Andi Pratama',
+    labelCompany: 'Company / Organization',
+    companyLabel: 'Company / Organization',
     placeholderCompany: 'e.g. PT Petrokimia Nusantara',
+    companyPlaceholder: 'e.g. PT Petrokimia Nusantara',
     labelContact: 'WhatsApp Number',
+    whatsappLabel: 'WhatsApp Number',
     placeholderContact: 'e.g. 0812-3456-7890',
+    whatsappPlaceholder: 'e.g. 0812-3456-7890',
     labelEmail: 'Email Address (Optional)',
+    emailLabel: 'Email Address (Optional)',
     placeholderEmail: 'e.g. andi@petrokimia.co.id',
-    labelCity: 'City',
+    emailPlaceholder: 'e.g. andi@petrokimia.co.id',
+    labelCity: 'City / Domicile',
+    cityLabel: 'City / Domicile',
     placeholderCity: 'e.g. Jakarta',
+    cityPlaceholder: 'e.g. Jakarta',
     labelInterest: 'Product Interest',
+    interestsLabel: 'Product Interest',
     labelNotes: 'Notes / Inquiries',
-    placeholderNotes: 'Write your requirements or questions here...',
+    placeholderNotes: 'Write your inquiries or requirements here...',
     labelSignature: 'Digital Signature (Optional)',
     showSignature: '+ Add Digital Signature',
     hideSignature: 'Hide Signature',
+    sigToggleShow: '+ Add Digital Signature',
+    sigToggleHide: 'Hide Signature',
     clearSignature: 'Clear Signature',
-    submitBtn: 'Submit & Save',
-    submittingBtn: 'Saving Data...',
-    simOfflineOn: 'Turn off offline simulation',
+    submitBtn: 'Submit & Save Details',
+    submittingBtn: 'Submitting Data...',
+    btnSubmit: 'Submit & Save Details',
+    btnSubmitting: 'Submitting Data...',
+    simOfflineOn: 'Disable offline simulation',
     simOfflineOff: 'Simulate offline mode',
     statTotal: 'Total Visitors',
     statToday: 'Today',
     statPending: 'Pending Sync',
     statTopInterest: 'Top Interest',
     statBalanced: 'Balanced',
-    tableTitle: 'Real-time Visitor Data',
+    tableTitle: 'Real-time Visitor Records',
     live: 'Live',
     colName: 'Name',
     colCompany: 'Company',
@@ -272,32 +350,32 @@ export const DICT: Record<Language, TranslationDict> = {
     colSync: 'Sync',
     colTime: 'Time',
     colAction: 'Action',
-    interestPanelTitle: 'Product Interest',
-    sourcePanelTitle: 'Data Source',
-    sourceKioskLabel: 'Tablet Kiosk',
-    sourceHpLabel: 'Visitor Phone Scan',
-    syncStatusTitle: 'Sync Status',
-    syncConnected: 'Realtime Server DB — Connected',
+    interestPanelTitle: 'Product Interest Breakdown',
+    sourcePanelTitle: 'Registration Source',
+    sourceKioskLabel: 'Desk Tablet Kiosk',
+    sourceHpLabel: 'Visitor Smartphone Scan',
+    syncStatusTitle: 'Real-time Sync Status',
+    syncConnected: 'Server Realtime DB — Connected',
     syncDisconnected: 'Server Disconnected — Offline Mode Active',
-    syncPendingEntries: 'local entries waiting for connection',
+    syncPendingEntries: 'local entries awaiting connection',
     syncLastAuto: 'Last auto-sync:',
     badgeKiosk: 'Kiosk',
-    badgeHp: 'Phone',
+    badgeHp: 'Mobile QR',
     badgeSynced: 'Synced',
     badgePending: 'Pending',
     syncOnlineBadge: 'Synced · online',
     syncOfflineBadge: 'local data · not synced',
     forceSyncBtn: 'Sync Now',
-    exportExcel: 'Export Excel',
+    exportExcel: 'Export Excel (.xlsx)',
     exportCsv: 'Export CSV',
     searchPlaceholder: 'Search name, company, WhatsApp, city...',
     allInterests: 'All Interests',
     allSources: 'All Sources',
     noData: 'No visitor data recorded yet.',
-    directWhatsapp: 'Contact WhatsApp',
+    directWhatsapp: 'Chat WhatsApp',
     deleteLead: 'Delete',
-    confirmDelete: 'Are you sure you want to delete this lead?',
-    settingsTitle: 'Booth Settings',
+    confirmDelete: 'Are you sure you want to delete this record?',
+    settingsTitle: 'Booth & Event Settings',
     adminPinPrompt: 'Enter Admin PIN to access dashboard',
     enterPin: 'Enter PIN (Default: 1234)',
     unlockAdmin: 'Unlock Dashboard'
