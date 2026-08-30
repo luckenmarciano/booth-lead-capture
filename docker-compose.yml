@@ -15,12 +15,19 @@ services:
       - DATA_DIR=/app/data
     volumes:
       - booth_data:/app/data
+    networks:
+      - default
+      - gladhy_default
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
+
+networks:
+  gladhy_default:
+    external: true
 
 volumes:
   booth_data:
