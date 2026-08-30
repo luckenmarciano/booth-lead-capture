@@ -281,7 +281,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               type="password"
               className="sa-input"
               style={{ textAlign: 'center', fontSize: '18px', letterSpacing: '4px', marginBottom: '14px' }}
-              placeholder="â€¢â€¢â€¢â€¢"
+              placeholder="••••"
               maxLength={8}
               value={pinInput}
               onChange={(e) => setPinInput(e.target.value)}
