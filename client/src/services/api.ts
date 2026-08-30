@@ -1,4 +1,4 @@
-import { Lead, BoothSettings, LeadStats } from '../types/lead.js';
+﻿import { Lead, BoothSettings, LeadStats } from '../types/lead';
 
 let customApiBaseUrl: string | null = null;
 

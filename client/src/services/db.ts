@@ -1,5 +1,5 @@
-import { Lead, BoothSettings } from '../types/lead.js';
-import { DEFAULT_SETTINGS, SAMPLE_INITIAL_LEADS } from '../data/defaultData.js';
+﻿import { Lead, BoothSettings } from '../types/lead';
+import { DEFAULT_SETTINGS, SAMPLE_INITIAL_LEADS } from '../data/defaultData';
 
 const DB_NAME = 'BoothLeadCaptureDB';
 const DB_VERSION = 1;

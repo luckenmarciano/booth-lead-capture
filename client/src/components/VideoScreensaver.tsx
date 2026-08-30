@@ -1,7 +1,7 @@
 ﻿import React, { useRef, useState } from 'react';
 import { Sparkles, Play, Volume2, VolumeX, Building2 } from 'lucide-react';
-import { BoothSettings, Language } from '../types/lead.js';
-import { DICT } from '../data/dictionary.js';
+import { BoothSettings, Language } from '../types/lead';
+import { DICT } from '../data/dictionary';
 
 interface VideoScreensaverProps {
   settings: BoothSettings;

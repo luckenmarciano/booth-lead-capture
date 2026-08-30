@@ -10,8 +10,8 @@ import {
   Building2
 } from 'lucide-react';
 import QRCode from 'qrcode';
-import { BoothSettings, Language } from '../types/lead.js';
-import { DICT } from '../data/dictionary.js';
+import { BoothSettings, Language } from '../types/lead';
+import { DICT } from '../data/dictionary';
 
 interface QRStandeeGeneratorProps {
   settings: BoothSettings;

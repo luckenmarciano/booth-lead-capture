@@ -1,6 +1,6 @@
-import { Lead, SyncStatusState } from '../types/lead.js';
-import { offlineDB } from './db.js';
-import { createLeadApi, batchSyncLeadsApi } from './api.js';
+﻿import { Lead, SyncStatusState } from '../types/lead';
+import { offlineDB } from './db';
+import { createLeadApi, batchSyncLeadsApi } from './api';
 
 type SyncListener = (state: SyncStatusState) => void;
 

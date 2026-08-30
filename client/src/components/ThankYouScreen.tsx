@@ -9,8 +9,8 @@ import {
   Globe,
   Share2
 } from 'lucide-react';
-import { BoothSettings, Lead, Language } from '../types/lead.js';
-import { DICT } from '../data/dictionary.js';
+import { BoothSettings, Lead, Language } from '../types/lead';
+import { DICT } from '../data/dictionary';
 
 interface ThankYouScreenProps {
   lead: Lead;

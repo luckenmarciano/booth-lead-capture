@@ -1,20 +1,20 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
-import { Navbar } from './components/Navbar.js';
-import { KioskHome } from './components/KioskHome.js';
-import { VisitorFormModal } from './components/VisitorFormModal.js';
-import { MobileVisitorForm } from './components/MobileVisitorForm.js';
-import { ThankYouScreen } from './components/ThankYouScreen.js';
-import { AdminDashboard } from './components/AdminDashboard.js';
-import { QRStandeeGenerator } from './components/QRStandeeGenerator.js';
-import { VideoScreensaver } from './components/VideoScreensaver.js';
-import { SettingsModal } from './components/SettingsModal.js';
-import { AppMode, BoothSettings, Lead, LeadStats, Language } from './types/lead.js';
-import { DEFAULT_SETTINGS } from './data/defaultData.js';
-import { offlineDB } from './services/db.js';
-import { fetchSettingsApi, fetchStats, getApiBaseUrl } from './services/api.js';
-import { useIdleTimer } from './hooks/useIdleTimer.js';
-import { useNetworkStatus } from './hooks/useNetworkStatus.js';
-import { useFullscreen } from './hooks/useFullscreen.js';
+import { Navbar } from './components/Navbar';
+import { KioskHome } from './components/KioskHome';
+import { VisitorFormModal } from './components/VisitorFormModal';
+import { MobileVisitorForm } from './components/MobileVisitorForm';
+import { ThankYouScreen } from './components/ThankYouScreen';
+import { AdminDashboard } from './components/AdminDashboard';
+import { QRStandeeGenerator } from './components/QRStandeeGenerator';
+import { VideoScreensaver } from './components/VideoScreensaver';
+import { SettingsModal } from './components/SettingsModal';
+import { AppMode, BoothSettings, Lead, LeadStats, Language } from './types/lead';
+import { DEFAULT_SETTINGS } from './data/defaultData';
+import { offlineDB } from './services/db';
+import { fetchSettingsApi, fetchStats, getApiBaseUrl } from './services/api';
+import { useIdleTimer } from './hooks/useIdleTimer';
+import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { useFullscreen } from './hooks/useFullscreen';
 
 export const App: React.FC = () => {
   // Check URL parameters for initial mode (e.g. ?mode=mobile from QR scan)

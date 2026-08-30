@@ -1,8 +1,10 @@
-node_modules
-dist
-client/dist
-server/dist
+﻿**/node_modules
+**/dist
 .git
 .env
-data
+.env.*
+/data
+/server/data
 *.log
+.DS_Store
+Thumbs.db

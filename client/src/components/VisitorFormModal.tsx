@@ -12,10 +12,10 @@ import {
   Sparkles
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { BoothSettings, Lead, Language } from '../types/lead.js';
-import { syncService } from '../services/syncService.js';
-import { SignatureCanvas } from './SignatureCanvas.js';
-import { DICT } from '../data/dictionary.js';
+import { BoothSettings, Lead, Language } from '../types/lead';
+import { syncService } from '../services/syncService';
+import { SignatureCanvas } from './SignatureCanvas';
+import { DICT } from '../data/dictionary';
 
 interface VisitorFormModalProps {
   isOpen: boolean;

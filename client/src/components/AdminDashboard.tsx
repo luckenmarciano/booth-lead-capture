@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Users,
   Calendar,
@@ -20,11 +20,11 @@ import {
   Layers,
   ArrowUpDown
 } from 'lucide-react';
-import { Lead, LeadStats, BoothSettings, Language } from '../types/lead.js';
-import { offlineDB } from '../services/db.js';
-import { fetchLeads, fetchStats, deleteLeadApi, verifyAdminPinApi } from '../services/api.js';
-import { useNetworkStatus } from '../hooks/useNetworkStatus.js';
-import { DICT } from '../data/dictionary.js';
+import { Lead, LeadStats, BoothSettings, Language } from '../types/lead';
+import { offlineDB } from '../services/db';
+import { fetchLeads, fetchStats, deleteLeadApi, verifyAdminPinApi } from '../services/api';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { DICT } from '../data/dictionary';
 
 interface AdminDashboardProps {
   settings: BoothSettings;
@@ -281,7 +281,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               type="password"
               className="sa-input"
               style={{ textAlign: 'center', fontSize: '18px', letterSpacing: '4px', marginBottom: '14px' }}
-              placeholder="••••"
+              placeholder="â€¢â€¢â€¢â€¢"
               maxLength={8}
               value={pinInput}
               onChange={(e) => setPinInput(e.target.value)}

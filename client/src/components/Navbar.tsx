@@ -10,8 +10,8 @@ import {
   WifiOff,
   Maximize2
 } from 'lucide-react';
-import { AppMode, BoothSettings, Language } from '../types/lead.js';
-import { DICT } from '../data/dictionary.js';
+import { AppMode, BoothSettings, Language } from '../types/lead';
+import { DICT } from '../data/dictionary';
 
 interface NavbarProps {
   currentMode: AppMode;

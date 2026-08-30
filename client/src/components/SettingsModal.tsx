@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   X,
   Save,
@@ -12,9 +12,9 @@ import {
   Calendar,
   Globe
 } from 'lucide-react';
-import { BoothSettings } from '../types/lead.js';
-import { updateSettingsApi } from '../services/api.js';
-import { offlineDB } from '../services/db.js';
+import { BoothSettings } from '../types/lead';
+import { updateSettingsApi } from '../services/api';
+import { offlineDB } from '../services/db';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -175,19 +175,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }}
           >
             <button type="button" style={tabBtnStyle('general')} onClick={() => setActiveTab('general')}>
-              🏢 Info Booth & Venue
+              ðŸ¢ Info Booth & Venue
             </button>
             <button type="button" style={tabBtnStyle('video')} onClick={() => setActiveTab('video')}>
-              🎬 Video Screensaver
+              ðŸŽ¬ Video Screensaver
             </button>
             <button type="button" style={tabBtnStyle('interests')} onClick={() => setActiveTab('interests')}>
-              🏷️ Pilihan Minat Produk
+              ðŸ·ï¸ Pilihan Minat Produk
             </button>
             <button type="button" style={tabBtnStyle('cloud')} onClick={() => setActiveTab('cloud')}>
-              📊 Google Sheets & API
+              ðŸ“Š Google Sheets & API
             </button>
             <button type="button" style={tabBtnStyle('security')} onClick={() => setActiveTab('security')}>
-              🔒 PIN & Keamanan
+              ðŸ”’ PIN & Keamanan
             </button>
           </div>
 
@@ -243,7 +243,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <input
                       type="text"
                       className="sa-input"
-                      placeholder="cth. 09 – 11 Sept 2026"
+                      placeholder="cth. 09 â€“ 11 Sept 2026"
                       value={formData.date_range || ''}
                       onChange={(e) => setFormData({ ...formData, date_range: e.target.value })}
                     />
@@ -407,7 +407,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
 
                   <div style={{ fontSize: '11px', color: '#8a8371', lineHeight: 1.5, background: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #e6e0cd' }}>
-                    💡 <strong>Tips:</strong> Data pengunjung otomatis tersimpan di Docker database VPS lokal secara persisten. Webhook Google Sheets adalah integrasi cadangan opsional.
+                    ðŸ’¡ <strong>Tips:</strong> Data pengunjung otomatis tersimpan di Docker database VPS lokal secara persisten. Webhook Google Sheets adalah integrasi cadangan opsional.
                   </div>
                 </>
               )}

@@ -13,8 +13,8 @@ import {
   Tablet
 } from 'lucide-react';
 import QRCode from 'qrcode';
-import { BoothSettings, LeadStats, Language } from '../types/lead.js';
-import { DICT } from '../data/dictionary.js';
+import { BoothSettings, LeadStats, Language } from '../types/lead';
+import { DICT } from '../data/dictionary';
 
 interface KioskHomeProps {
   settings: BoothSettings;

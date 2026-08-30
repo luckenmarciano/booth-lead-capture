@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { syncService } from '../services/syncService.js';
-import { SyncStatusState } from '../types/lead.js';
+﻿import { useState, useEffect } from 'react';
+import { syncService } from '../services/syncService';
+import { SyncStatusState } from '../types/lead';
 
 export function useNetworkStatus(): SyncStatusState & { triggerSync: () => Promise<void> } {
   const [status, setStatus] = useState<SyncStatusState>(syncService.getState());
