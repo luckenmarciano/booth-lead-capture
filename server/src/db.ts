@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 
 export interface Lead {
@@ -59,7 +59,7 @@ const DEFAULT_SETTINGS: BoothSettings = {
   tagline: 'Leading Marine & Industrial Environmental Solutions',
   kiosk_venue: 'Jakarta Convention Center',
   date_range: '09 – 11 Sept 2026',
-  video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  video_url: 'https://www.youtube.com/watch?v=xgznJcRRUOw',
   video_enabled: true,
   idle_timeout_sec: 60,
   default_interests: [

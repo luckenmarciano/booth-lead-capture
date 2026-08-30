@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { Sparkles, Play, Volume2, VolumeX, Building2 } from 'lucide-react';
 import { BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
@@ -8,6 +8,13 @@ interface VideoScreensaverProps {
   lang: Language;
   onWake: () => void;
 }
+
+const getYouTubeId = (url?: string): string | null => {
+  if (!url) return null;
+  const regExp = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/;
+  const match = url.trim().match(regExp);
+  return match ? match[1] : null;
+};
 
 export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
   settings,
@@ -19,12 +26,14 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
   const [hasError, setHasError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
+  const youtubeId = useMemo(() => getYouTubeId(settings.video_url), [settings.video_url]);
+
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
     }
+    setIsMuted(!isMuted);
   };
 
   return (
@@ -50,25 +59,56 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
         padding: '32px'
       }}
     >
-      {/* Video Player Background if available */}
+      {/* Video Player Background if available (Supports YouTube & MP4/WebM) */}
       {!hasError && settings.video_url ? (
-        <video
-          ref={videoRef}
-          src={settings.video_url}
-          autoPlay
-          loop
-          muted={isMuted}
-          playsInline
-          onError={() => setHasError(true)}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            zIndex: 1
-          }}
-        />
+        youtubeId ? (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              overflow: 'hidden',
+              zIndex: 1,
+              pointerEvents: 'none'
+            }}
+          >
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
+              title="YouTube Screensaver Video"
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '100vw',
+                height: '100vh',
+                minWidth: '177.78vh',
+                minHeight: '56.25vw',
+                transform: 'translate(-50%, -50%)',
+                border: 'none',
+                pointerEvents: 'none'
+              }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            src={settings.video_url}
+            autoPlay
+            loop
+            muted={isMuted}
+            playsInline
+            onError={() => setHasError(true)}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              zIndex: 1
+            }}
+          />
+        )
       ) : null}
 
       {/* Dark Luxury Gradient Overlay */}

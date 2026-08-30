@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Save,
@@ -279,17 +279,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                   <div>
                     <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-                      URL Video Company Profile (MP4/WebM)
+                      URL Video Company Profile (YouTube / MP4 / WebM)
                     </label>
                     <input
                       type="url"
                       className="sa-input"
-                      placeholder="https://example.com/company-profile.mp4"
+                      placeholder="https://www.youtube.com/watch?v=... atau link .mp4"
                       value={formData.video_url}
                       onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
                     />
                     <div style={{ fontSize: '10.5px', color: '#8a8371', marginTop: '4px' }}>
-                      Masukkan link file video MP4 langsung (atau gunakan URL default sampel).
+                      Mendukung link YouTube (cth: https://youtu.be/... atau https://youtube.com/watch?v=...) serta file video langsung MP4/WebM.
                     </div>
                   </div>
 
