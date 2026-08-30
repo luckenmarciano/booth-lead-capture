@@ -1,10 +1,14 @@
-node_modules/
+﻿node_modules/
+**/node_modules/
 dist/
 client/dist/
 server/dist/
 .env
 .env.local
-data/
+.env.*
+/data/
+/server/data/
+!client/src/data/
 *.log
 .DS_Store
 Thumbs.db
