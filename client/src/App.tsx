@@ -31,7 +31,6 @@ export const App: React.FC = () => {
 
   const initial = getInitialMode();
   const [currentMode, setCurrentMode] = useState<AppMode>(initial.mode);
-  const [isDirectMobile] = useState<boolean>(initial.isDirectMobile);
   const [lang, setLang] = useState<Language>('id');
   const [isSimOffline, setIsSimOffline] = useState(false);
 
@@ -44,7 +43,7 @@ export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const { isOnline, isSyncing, pendingCount, triggerSync } = useNetworkStatus();
-  const { isFullscreen, toggleFullscreen } = useFullscreen();
+  const { toggleFullscreen } = useFullscreen();
 
   // Load Settings and Stats initially
   const loadInitialData = useCallback(async () => {
@@ -142,6 +141,9 @@ export const App: React.FC = () => {
     resetTimer();
   };
 
+  // Only show Admin Navbar on Admin and Standee Generator screens
+  const showAdminNavbar = currentMode === 'admin' || currentMode === 'standee';
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f1ea', display: 'flex', flexDirection: 'column' }}>
       {/* Video Screensaver Overlay (Touch-to-wake) */}
@@ -153,27 +155,29 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Top Navbar */}
-      <Navbar
-        currentMode={currentMode}
-        onSelectMode={(mode) => {
-          setCurrentMode(mode);
-          setSubmittedLead(null);
-          setIsTabletFormOpen(false);
-          setIsScreensaverActive(false);
-        }}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        settings={settings}
-        lang={lang}
-        onSetLang={setLang}
-        isSimOffline={isSimOffline}
-        onToggleSimOffline={() => setIsSimOffline(!isSimOffline)}
-        isOnline={isOnline && !isSimOffline}
-        isSyncing={isSyncing}
-        pendingCount={pendingCount}
-        onForceSync={triggerSync}
-        onToggleFullscreen={toggleFullscreen}
-      />
+      {/* Top Navbar ONLY for Admin & Standee Maker (Hidden for Kiosk and Mobile Visitors) */}
+      {showAdminNavbar && (
+        <Navbar
+          currentMode={currentMode}
+          onSelectMode={(mode) => {
+            setCurrentMode(mode);
+            setSubmittedLead(null);
+            setIsTabletFormOpen(false);
+            setIsScreensaverActive(false);
+          }}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          settings={settings}
+          lang={lang}
+          onSetLang={setLang}
+          isSimOffline={isSimOffline}
+          onToggleSimOffline={() => setIsSimOffline(!isSimOffline)}
+          isOnline={isOnline && !isSimOffline}
+          isSyncing={isSyncing}
+          pendingCount={pendingCount}
+          onForceSync={triggerSync}
+          onToggleFullscreen={toggleFullscreen}
+        />
+      )}
 
       {/* Main Content Area */}
       <main style={{ flex: 1, position: 'relative' }}>
@@ -188,28 +192,29 @@ export const App: React.FC = () => {
           />
         ) : (
           <>
-            {/* VIEW 2: KIOSK TABLET HOME */}
+            {/* VIEW 2: KIOSK TABLET HOME (Distraction-Free) */}
             {currentMode === 'kiosk' && (
               <KioskHome
                 settings={settings}
                 stats={stats}
                 lang={lang}
+                onSetLang={setLang}
                 onOpenForm={() => setIsTabletFormOpen(true)}
                 onPlayVideo={() => setIsScreensaverActive(true)}
+                onOpenAdmin={() => setCurrentMode('admin')}
+                onToggleFullscreen={toggleFullscreen}
                 isSimOffline={isSimOffline}
-                onToggleSimOffline={() => setIsSimOffline(!isSimOffline)}
               />
             )}
 
-            {/* VIEW 3: MOBILE VISITOR FORM */}
+            {/* VIEW 3: MOBILE VISITOR FORM (Clean & Standalone) */}
             {currentMode === 'mobile' && (
               <MobileVisitorForm
                 settings={settings}
                 lang={lang}
+                onSetLang={setLang}
                 onSuccess={handleFormSubmitted}
                 isSimOffline={isSimOffline}
-                onToggleSimOffline={() => setIsSimOffline(!isSimOffline)}
-                isInsideBezel={!isDirectMobile}
               />
             )}
 

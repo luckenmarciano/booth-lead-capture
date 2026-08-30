@@ -9,7 +9,6 @@ import {
   Send,
   PenTool,
   CheckCircle2,
-  WifiOff,
   RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -21,19 +20,17 @@ import { DICT } from '../data/dictionary';
 interface MobileVisitorFormProps {
   settings: BoothSettings;
   lang: Language;
+  onSetLang?: (lang: Language) => void;
   onSuccess: (lead: Lead) => void;
-  isSimOffline: boolean;
-  onToggleSimOffline: () => void;
-  isInsideBezel?: boolean;
+  isSimOffline?: boolean;
 }
 
 export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
   settings,
   lang,
+  onSetLang,
   onSuccess,
-  isSimOffline,
-  onToggleSimOffline,
-  isInsideBezel = true
+  isSimOffline = false
 }) => {
   const t = DICT[lang];
 
@@ -101,17 +98,25 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
         });
       } catch {}
 
-      setLastSubmittedLead(result.lead);
+      const finalLead: Lead = {
+        ...leadPayload,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        sync_status: result.status === 'synced' ? 'synced' : 'pending'
+      };
+
+      setLastSubmittedLead(finalLead);
       setIsSubmitted(true);
-      onSuccess(result.lead);
+      onSuccess(finalLead);
     } catch (err: any) {
-      setErrorMsg(err?.message || (lang === 'id' ? 'Gagal menyimpan data' : 'Failed to submit data'));
+      console.error('[MobileVisitorForm] Submission error:', err);
+      setErrorMsg(lang === 'id' ? 'Gagal menyimpan data. Silakan coba lagi.' : 'Failed to submit. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReset = () => {
+  const handleResetForm = () => {
     setFullName('');
     setCompany('');
     setWhatsapp('');
@@ -125,422 +130,473 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
     setLastSubmittedLead(null);
   };
 
-  const formCardContent = (
-    <div
-      style={{
-        backgroundColor: '#fbf9f4',
-        borderRadius: isInsideBezel ? '28px' : '20px',
-        overflow: 'hidden',
-        minHeight: '620px',
-        display: 'flex',
-        flexDirection: 'column',
-        border: isInsideBezel ? 'none' : '1px solid #e6e0cd',
-        boxShadow: isInsideBezel ? 'none' : '0 12px 36px rgba(15,47,61,0.08)'
-      }}
-    >
-      {/* Header Banner */}
-      <div
-        style={{
-          background: 'linear-gradient(120deg, #0f2f3d 0%, #1f5c4a 100%)',
-          padding: '24px 22px 20px',
-          color: '#ffffff'
-        }}
-      >
-        <div
-          style={{
-            fontSize: '10px',
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
-            color: '#c9b896',
-            marginBottom: '4px',
-            fontWeight: 600
-          }}
-        >
-          {settings.company_name || t.formBrand}
-        </div>
-        <div
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: '20px',
-            fontWeight: 600,
-            lineHeight: 1.25
-          }}
-        >
-          {t.formTitle}
-        </div>
-      </div>
-
-      {/* Offline Mode Banner */}
-      {isSimOffline && (
-        <div
-          style={{
-            backgroundColor: '#fff4de',
-            borderBottom: '1px solid #eddcb5',
-            padding: '9px 20px',
-            fontSize: '11px',
-            color: '#8a5a00',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
-          <span
-            style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: '#c9932e',
-              display: 'inline-block'
-            }}
-          />
-          <span>{t.offlineBanner}</span>
-        </div>
-      )}
-
-      {/* SUCCESS STATE / THANK YOU SCREEN */}
-      {isSubmitted ? (
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '14px',
-            padding: '40px 24px',
-            textAlign: 'center'
-          }}
-        >
-          <div
-            style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              backgroundColor: '#e4f0e9',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#1f5c4a',
-              boxShadow: '0 4px 16px rgba(31,92,74,0.15)'
-            }}
-          >
-            <CheckCircle2 size={36} />
-          </div>
-
-          <div
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '22px',
-              fontWeight: 600,
-              color: '#0f2f3d'
-            }}
-          >
-            {t.thankYou}
-          </div>
-
-          <div style={{ fontSize: '13px', color: '#6b6455', lineHeight: 1.5, maxWidth: '280px' }}>
-            {isSimOffline || lastSubmittedLead?.sync_status === 'pending'
-              ? t.statusOfflineMsg
-              : t.statusOnlineMsg}
-          </div>
-
-          {lastSubmittedLead && (
-            <div
-              style={{
-                backgroundColor: '#ffffff',
-                border: '1px solid #e6e0cd',
-                borderRadius: '12px',
-                padding: '14px 18px',
-                width: '100%',
-                maxWidth: '280px',
-                textAlign: 'left',
-                fontSize: '11.5px',
-                color: '#4a453a',
-                marginTop: '6px'
-              }}
-            >
-              <div style={{ fontWeight: 700, color: '#0f2f3d', marginBottom: '4px' }}>
-                {lastSubmittedLead.full_name}
-              </div>
-              <div>{lastSubmittedLead.company} • {lastSubmittedLead.city}</div>
-              <div style={{ marginTop: '4px', fontSize: '10.5px', color: '#8a8371' }}>
-                Minat: {lastSubmittedLead.interests.join(', ')}
-              </div>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleReset}
-            style={{
-              marginTop: '10px',
-              padding: '10px 22px',
-              borderRadius: '9px',
-              border: '1px solid #d8d0b8',
-              backgroundColor: '#ffffff',
-              color: '#0f2f3d',
-              fontSize: '12.5px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <RotateCcw size={14} />
-            <span>{t.fillAgain}</span>
-          </button>
-        </div>
-      ) : (
-        /* FORM INPUT STATE */
-        <form onSubmit={handleSubmit} style={{ padding: '20px 22px 28px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {errorMsg && (
-            <div
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                color: '#b91c1c',
-                fontSize: '12px'
-              }}
-            >
-              {errorMsg}
-            </div>
-          )}
-
-          {/* Nama Lengkap */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-              <User size={13} color="#2f7d5c" />
-              <span>{t.labelName} *</span>
-            </label>
-            <input
-              type="text"
-              className="sa-input"
-              placeholder={t.placeholderName}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-
-          {/* Asal Perusahaan */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-              <Building size={13} color="#2f7d5c" />
-              <span>{t.labelCompany}</span>
-            </label>
-            <input
-              type="text"
-              className="sa-input"
-              placeholder={t.placeholderCompany}
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-            />
-          </div>
-
-          {/* Nomor WhatsApp */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-              <Phone size={13} color="#2f7d5c" />
-              <span>{t.labelContact} *</span>
-            </label>
-            <input
-              type="tel"
-              className="sa-input"
-              placeholder={t.placeholderContact}
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              required
-            />
-          </div>
-
-          {/* Alamat Email */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-              <Mail size={13} color="#2f7d5c" />
-              <span>{t.labelEmail}</span>
-            </label>
-            <input
-              type="email"
-              className="sa-input"
-              placeholder={t.placeholderEmail}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          {/* Kota / Domisili */}
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-              <MapPin size={13} color="#2f7d5c" />
-              <span>{t.labelCity}</span>
-            </label>
-            <input
-              type="text"
-              className="sa-input"
-              placeholder={t.placeholderCity}
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            />
-          </div>
-
-          {/* Pilihan Minat Produk */}
-          <div>
-            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '8px' }}>
-              {t.labelInterest}
-            </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {settings.default_interests.map((interest, idx) => {
-                const isSelected = selectedInterests.includes(interest);
-                const isEven = idx % 2 === 0;
-                return (
-                  <div
-                    key={interest}
-                    className={`sa-interest-chip ${isSelected ? (isEven ? 'selected-oil' : 'selected-slick') : ''}`}
-                    onClick={() => toggleInterest(interest)}
-                  >
-                    <div className="sa-check-box">
-                      {isSelected && <Check size={12} strokeWidth={3} />}
-                    </div>
-                    <span>{interest}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Catatan / Kebutuhan Tambahan */}
-          <div>
-            <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-              {t.labelNotes}
-            </label>
-            <textarea
-              className="sa-input"
-              rows={2}
-              placeholder={t.placeholderNotes}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
-
-          {/* Toggle Digital Signature */}
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowSignature(!showSignature)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#1f5c4a',
-                fontSize: '11.5px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                cursor: 'pointer',
-                padding: '4px 0'
-              }}
-            >
-              <PenTool size={13} />
-              <span>{showSignature ? t.hideSignature : t.showSignature}</span>
-            </button>
-
-            {showSignature && (
-              <div style={{ marginTop: '8px' }}>
-                <SignatureCanvas onSave={(url) => setSignatureUrl(url)} initialData={signatureUrl} />
-              </div>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="sa-btn-primary"
-            style={{
-              width: '100%',
-              padding: '14px',
-              fontSize: '14px',
-              marginTop: '6px'
-            }}
-          >
-            {isSubmitting ? (
-              <span>{t.submittingBtn}</span>
-            ) : (
-              <>
-                <Send size={16} />
-                <span>{t.submitBtn}</span>
-              </>
-            )}
-          </button>
-        </form>
-      )}
-    </div>
-  );
-
   return (
     <div
       style={{
-        padding: '24px 16px 60px',
+        minHeight: '100vh',
+        backgroundColor: '#f4f1ea',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '16px'
+        padding: '16px 12px 48px'
       }}
     >
-      {/* Offline Mode Toggle Button for testing */}
-      <button
-        type="button"
-        onClick={onToggleSimOffline}
+      <div
         style={{
-          padding: '6px 14px',
-          borderRadius: '8px',
-          border: '1px solid #d8d0b8',
-          background: '#ffffff',
-          color: '#6b6455',
-          fontSize: '11px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px'
+          width: '100%',
+          maxWidth: '480px',
+          backgroundColor: '#fbf9f4',
+          borderRadius: '24px',
+          overflow: 'hidden',
+          border: '1px solid #e6e0cd',
+          boxShadow: '0 16px 40px rgba(15, 47, 61, 0.08)',
+          display: 'flex',
+          flexDirection: 'column'
         }}
-        className="no-print"
       >
-        <WifiOff size={13} color="#c9932e" />
-        <span>{isSimOffline ? t.simOfflineOn : t.simOfflineOff}</span>
-      </button>
-
-      {/* Phone Bezel Frame */}
-      {isInsideBezel ? (
+        {/* Header Banner */}
         <div
           style={{
-            width: '100%',
-            maxWidth: '344px',
-            backgroundColor: '#111111',
-            borderRadius: '40px',
-            padding: '12px',
-            boxShadow: '0 20px 50px rgba(15, 47, 61, 0.25)'
+            background: 'linear-gradient(120deg, #0f2f3d 0%, #1f5c4a 100%)',
+            padding: '22px 20px 18px',
+            color: '#ffffff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
           }}
         >
+          <div>
+            <div
+              style={{
+                fontSize: '10px',
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+                color: '#c9b896',
+                marginBottom: '3px',
+                fontWeight: 700
+              }}
+            >
+              {settings.company_name || 'SpillAsia 2026'} • {settings.booth_id}
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '20px',
+                fontWeight: 700,
+                lineHeight: 1.2
+              }}
+            >
+              {t.formTitle}
+            </div>
+          </div>
+
+          {/* Language Toggle in Header */}
+          {onSetLang && (
+            <div
+              style={{
+                display: 'inline-flex',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(8px)',
+                padding: '2px',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => onSetLang('id')}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  backgroundColor: lang === 'id' ? '#ffffff' : 'transparent',
+                  color: lang === 'id' ? '#0f2f3d' : '#ffffff'
+                }}
+              >
+                ID
+              </button>
+              <button
+                type="button"
+                onClick={() => onSetLang('en')}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '10.5px',
+                  fontWeight: 700,
+                  backgroundColor: lang === 'en' ? '#ffffff' : 'transparent',
+                  color: lang === 'en' ? '#0f2f3d' : '#ffffff'
+                }}
+              >
+                EN
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* SUCCESS STATE / THANK YOU SCREEN */}
+        {isSubmitted ? (
           <div
             style={{
-              width: '60px',
-              height: '5px',
-              backgroundColor: '#333333',
-              borderRadius: '3px',
-              margin: '0 auto 8px'
+              padding: '36px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              gap: '14px'
             }}
-          />
-          {formCardContent}
-        </div>
-      ) : (
-        <div style={{ width: '100%', maxWidth: '480px' }}>
-          {formCardContent}
-        </div>
-      )}
+          >
+            <div
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                backgroundColor: '#e4f0e9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#1f5c4a',
+                boxShadow: '0 4px 16px rgba(31,92,74,0.15)'
+              }}
+            >
+              <CheckCircle2 size={32} />
+            </div>
+
+            <h2
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '22px',
+                fontWeight: 700,
+                color: '#0f2f3d',
+                margin: 0
+              }}
+            >
+              {t.thankYouTitle}
+            </h2>
+
+            <p style={{ fontSize: '13px', color: '#6b6455', margin: 0, maxWidth: '320px', lineHeight: 1.5 }}>
+              {t.thankYouSubtitle}
+            </p>
+
+            {/* Summary Badge */}
+            {lastSubmittedLead && (
+              <div
+                style={{
+                  width: '100%',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '14px',
+                  padding: '16px',
+                  border: '1px solid #e6e0cd',
+                  textAlign: 'left',
+                  fontSize: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ fontWeight: 700, color: '#0f2f3d', fontSize: '13.5px' }}>
+                  {lastSubmittedLead.full_name}
+                </div>
+                {lastSubmittedLead.company !== '-' && (
+                  <div style={{ color: '#6b6455' }}>🏢 {lastSubmittedLead.company}</div>
+                )}
+                <div style={{ color: '#1f5c4a', fontWeight: 600 }}>💬 {lastSubmittedLead.whatsapp}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                  {lastSubmittedLead.interests.map((it, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        fontSize: '10px',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: '#e4f0e9',
+                        color: '#1f5c4a',
+                        fontWeight: 600
+                      }}
+                    >
+                      {it}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Reset / Fill Again Button */}
+            <button
+              type="button"
+              onClick={handleResetForm}
+              style={{
+                width: '100%',
+                padding: '13px 20px',
+                borderRadius: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                background: 'linear-gradient(135deg, #1f5c4a 0%, #0f2f3d 100%)',
+                color: '#ffffff',
+                fontSize: '13.5px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginTop: '10px'
+              }}
+            >
+              <RotateCcw size={16} />
+              <span>{t.btnFillAgain}</span>
+            </button>
+          </div>
+        ) : (
+          /* REGISTRATION FORM */
+          <form onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {errorMsg && (
+              <div
+                style={{
+                  backgroundColor: '#fbeae5',
+                  border: '1px solid #f2b8ab',
+                  borderRadius: '10px',
+                  padding: '10px 14px',
+                  color: '#9c2411',
+                  fontSize: '12px',
+                  fontWeight: 600
+                }}
+              >
+                {errorMsg}
+              </div>
+            )}
+
+            {/* 1. Nama Lengkap */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#0f2f3d', marginBottom: '6px' }}>
+                <User size={14} color="#1f5c4a" />
+                <span>{t.fullNameLabel}</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder={t.fullNamePlaceholder}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #dcd5be',
+                  backgroundColor: '#ffffff',
+                  fontSize: '13.5px',
+                  color: '#0f2f3d',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            {/* 2. Perusahaan */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#0f2f3d', marginBottom: '6px' }}>
+                <Building size={14} color="#1f5c4a" />
+                <span>{t.companyLabel}</span>
+              </label>
+              <input
+                type="text"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                placeholder={t.companyPlaceholder}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #dcd5be',
+                  backgroundColor: '#ffffff',
+                  fontSize: '13.5px',
+                  color: '#0f2f3d',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            {/* 3. Nomor WhatsApp */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#0f2f3d', marginBottom: '6px' }}>
+                <Phone size={14} color="#1f5c4a" />
+                <span>{t.whatsappLabel}</span>
+              </label>
+              <input
+                type="tel"
+                required
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder={t.whatsappPlaceholder}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #dcd5be',
+                  backgroundColor: '#ffffff',
+                  fontSize: '13.5px',
+                  color: '#0f2f3d',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            {/* 4. Email & Kota (Row) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', fontWeight: 700, color: '#0f2f3d', marginBottom: '6px' }}>
+                  <Mail size={13} color="#1f5c4a" />
+                  <span>{t.emailLabel}</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.emailPlaceholder}
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #dcd5be',
+                    backgroundColor: '#ffffff',
+                    fontSize: '12.5px',
+                    color: '#0f2f3d',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', fontWeight: 700, color: '#0f2f3d', marginBottom: '6px' }}>
+                  <MapPin size={13} color="#1f5c4a" />
+                  <span>{t.cityLabel}</span>
+                </label>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder={t.cityPlaceholder}
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #dcd5be',
+                    backgroundColor: '#ffffff',
+                    fontSize: '12.5px',
+                    color: '#0f2f3d',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* 5. Minat Produk (Chips) */}
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f2f3d', marginBottom: '8px' }}>
+                {t.interestsLabel}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {settings.default_interests.map((interest) => {
+                  const isSelected = selectedInterests.includes(interest);
+                  return (
+                    <button
+                      key={interest}
+                      type="button"
+                      onClick={() => toggleInterest(interest)}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '999px',
+                        border: isSelected ? '1.5px solid #1f5c4a' : '1px solid #d8d1bc',
+                        backgroundColor: isSelected ? '#1f5c4a' : '#ffffff',
+                        color: isSelected ? '#ffffff' : '#333333',
+                        fontSize: '11.5px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {isSelected && <Check size={12} strokeWidth={3} />}
+                      <span>{interest}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 6. Tanda Tangan Digital (Opsional) */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowSignature(!showSignature)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: '#1f5c4a',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <PenTool size={13} />
+                <span>{showSignature ? t.sigToggleHide : t.sigToggleShow}</span>
+              </button>
+
+              {showSignature && (
+                <div style={{ marginTop: '8px' }}>
+                  <SignatureCanvas onSaveSignature={(url) => setSignatureUrl(url)} lang={lang} />
+                </div>
+              )}
+            </div>
+
+            {/* Tombol Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                borderRadius: '14px',
+                border: 'none',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                background: 'linear-gradient(135deg, #1f5c4a 0%, #0f2f3d 100%)',
+                color: '#ffffff',
+                fontSize: '14.5px',
+                fontWeight: 700,
+                letterSpacing: '0.3px',
+                boxShadow: '0 8px 24px rgba(31, 92, 74, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginTop: '6px'
+              }}
+            >
+              <Send size={16} />
+              <span>{isSubmitting ? t.btnSubmitting : t.btnSubmit}</span>
+            </button>
+          </form>
+        )}
+      </div>
+
+      {/* Footer Branding */}
+      <div style={{ marginTop: '16px', fontSize: '11px', color: '#8a8371', textAlign: 'center' }}>
+        {settings.company_name} • {settings.kiosk_venue}
+      </div>
     </div>
   );
 };
+export default MobileVisitorForm;
