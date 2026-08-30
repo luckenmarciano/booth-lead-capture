@@ -17,6 +17,7 @@ import {
   Check,
   X,
   FileSpreadsheet,
+  FileText,
   Layers,
   ArrowUpDown
 } from 'lucide-react';
@@ -179,34 +180,119 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
+  // \u2500\u2500 Data Export (CSV / Excel / PDF) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  const EXPORT_HEADERS = [
+    'Nama Lengkap', 'Perusahaan', 'Jabatan', 'Kota', 'WhatsApp', 'Email',
+    'Minat Produk', 'Preferensi Follow-up', 'Sumber', 'Status Sync', 'Waktu'
+  ];
+
+  const sourceLabel = (s: Lead['source']) =>
+    s === 'kiosk_tablet' ? 'Kiosk Tablet' : s === 'mobile_qr' ? 'Scan HP' : 'Manual Admin';
+
+  const buildExportRows = (): string[][] =>
+    leads.map((l) => [
+      l.full_name || '',
+      l.company || '',
+      l.job_title || '',
+      l.city || '',
+      l.whatsapp || '',
+      l.email || '',
+      (l.interests || []).join('; '),
+      l.follow_up_pref || '',
+      sourceLabel(l.source),
+      l.sync_status === 'synced' ? 'Tersinkron' : l.sync_status === 'failed' ? 'Gagal' : 'Menunggu',
+      l.created_at ? new Date(l.created_at).toLocaleString('id-ID') : ''
+    ]);
+
+  const exportFileName = (ext: string) =>
+    `leads_${(settings.company_name || 'booth').replace(/[^\w]+/g, '_')}_${settings.booth_id || 'booth'}_${new Date().toISOString().split('T')[0]}.${ext}`;
+
+  const downloadBlob = (content: BlobPart, mime: string, filename: string) => {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
   const exportToCsv = () => {
     if (leads.length === 0) {
       showToast(t.noData);
       return;
     }
-    const headers = ['ID', 'Nama Lengkap', 'Perusahaan', 'Kota', 'WhatsApp', 'Email', 'Minat Produk', 'Sumber', 'Status Sync', 'Waktu'];
-    const rows = leads.map((l) => [
-      l.id,
-      `"${(l.full_name || '').replace(/"/g, '""')}"`,
-      `"${(l.company || '').replace(/"/g, '""')}"`,
-      `"${(l.city || '').replace(/"/g, '""')}"`,
-      `"${(l.whatsapp || '').replace(/"/g, '""')}"`,
-      `"${(l.email || '').replace(/"/g, '""')}"`,
-      `"${(l.interests || []).join('; ').replace(/"/g, '""')}"`,
-      l.source,
-      l.sync_status,
-      new Date(l.created_at).toLocaleString()
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `leads_spillasia_${settings.booth_id}_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const csv =
+      '\uFEFF' +
+      [EXPORT_HEADERS, ...buildExportRows()].map((r) => r.map(esc).join(',')).join('\r\n');
+    downloadBlob(csv, 'text/csv;charset=utf-8', exportFileName('csv'));
     showToast(lang === 'id' ? 'File CSV berhasil diunduh' : 'CSV file downloaded');
+  };
+
+  const exportToExcel = () => {
+    if (leads.length === 0) {
+      showToast(t.noData);
+      return;
+    }
+    const body = buildExportRows()
+      .map((r) => `<tr>${r.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`)
+      .join('');
+    const table =
+      `<table border="1"><thead><tr>${EXPORT_HEADERS.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`;
+    const html =
+      `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">` +
+      `<head><meta charset="utf-8">` +
+      `<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>` +
+      `<x:Name>Leads</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>` +
+      `</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->` +
+      `<style>th{background:#0f2f3d;color:#fff;font-weight:bold}td,th{border:1px solid #ccc;padding:4px 8px;font-family:Calibri,Arial;mso-number-format:"\\@"}</style>` +
+      `</head><body>${table}</body></html>`;
+    downloadBlob('\uFEFF' + html, 'application/vnd.ms-excel', exportFileName('xls'));
+    showToast(lang === 'id' ? 'File Excel berhasil diunduh' : 'Excel file downloaded');
+  };
+
+  const exportToPdf = () => {
+    if (leads.length === 0) {
+      showToast(t.noData);
+      return;
+    }
+    const body = buildExportRows()
+      .map((r, i) => `<tr class="${i % 2 ? 'alt' : ''}">${r.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`)
+      .join('');
+    const win = window.open('', '_blank');
+    if (!win) {
+      showToast(lang === 'id' ? 'Popup diblokir. Izinkan popup untuk ekspor PDF.' : 'Popup blocked. Allow popups to export PDF.');
+      return;
+    }
+    win.document.write(
+      `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHtml(exportFileName('pdf'))}</title>` +
+      `<style>` +
+      `@page{size:A4 landscape;margin:12mm}` +
+      `*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#1c2b28;margin:0}` +
+      `.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0f2f3d;padding-bottom:8px;margin-bottom:12px}` +
+      `h1{font-size:16px;margin:0;color:#0f2f3d}.sub{font-size:11px;color:#555;margin-top:2px}` +
+      `.meta{font-size:10px;color:#666;text-align:right}` +
+      `table{width:100%;border-collapse:collapse;font-size:9px}` +
+      `th{background:#0f2f3d;color:#fff;text-align:left;padding:5px 6px}` +
+      `td{border-bottom:1px solid #e0e0e0;padding:4px 6px;vertical-align:top}` +
+      `tr.alt td{background:#f7f5ef}` +
+      `.foot{margin-top:14px;font-size:9px;color:#888;text-align:center}` +
+      `</style></head><body>` +
+      `<div class="head"><div><h1>Data Pengunjung \u2014 ${escapeHtml(settings.company_name || '')}</h1>` +
+      `<div class="sub">${escapeHtml(settings.booth_id || '')} \u00B7 ${escapeHtml(settings.kiosk_venue || '')}</div></div>` +
+      `<div class="meta">Diekspor: ${new Date().toLocaleString('id-ID')}<br>Total: ${leads.length} pengunjung</div></div>` +
+      `<table><thead><tr>${EXPORT_HEADERS.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>` +
+      `<div class="foot">Dihasilkan otomatis oleh Sistem Buku Tamu Booth Pameran</div>` +
+      `<script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>` +
+      `</body></html>`
+    );
+    win.document.close();
+    showToast(lang === 'id' ? 'Menyiapkan PDF untuk dicetak / disimpan...' : 'Preparing PDF to print / save...');
   };
 
   const openWhatsAppChat = (lead: Lead) => {
@@ -447,27 +533,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={exportToCsv}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #d8d0b8',
-                    backgroundColor: '#ffffff',
-                    color: '#0f2f3d',
-                    fontSize: '11.5px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px'
-                  }}
-                >
-                  <Download size={13} />
-                  <span>{t.exportCsv}</span>
-                </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#8a8371', marginRight: '2px' }}>
+                  {t.exportLabel}:
+                </span>
+                {([
+                  { key: 'csv', label: t.exportCsv, icon: <Download size={13} />, fn: exportToCsv },
+                  { key: 'excel', label: t.exportExcel, icon: <FileSpreadsheet size={13} />, fn: exportToExcel },
+                  { key: 'pdf', label: t.exportPdf, icon: <FileText size={13} />, fn: exportToPdf }
+                ] as const).map((btn) => (
+                  <button
+                    key={btn.key}
+                    type="button"
+                    onClick={btn.fn}
+                    style={{
+                      padding: '6px 11px',
+                      borderRadius: '8px',
+                      border: '1px solid #d8d0b8',
+                      backgroundColor: '#ffffff',
+                      color: '#0f2f3d',
+                      fontSize: '11.5px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    {btn.icon}
+                    <span>{btn.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
 

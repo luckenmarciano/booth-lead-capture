@@ -114,6 +114,8 @@ export interface TranslationDict {
   forceSyncBtn: string;
   exportExcel: string;
   exportCsv: string;
+  exportPdf: string;
+  exportLabel: string;
   searchPlaceholder: string;
   allInterests: string;
   allSources: string;
@@ -240,8 +242,10 @@ export const DICT: Record<Language, TranslationDict> = {
     syncOnlineBadge: 'Tersinkron · online',
     syncOfflineBadge: 'data lokal · belum sync',
     forceSyncBtn: 'Sinkronkan Sekarang',
-    exportExcel: 'Ekspor Excel (.xlsx)',
-    exportCsv: 'Ekspor CSV',
+    exportExcel: 'Excel',
+    exportCsv: 'CSV',
+    exportPdf: 'PDF',
+    exportLabel: 'Ekspor Data',
     searchPlaceholder: 'Cari nama, perusahaan, WhatsApp, kota...',
     allInterests: 'Semua Minat',
     allSources: 'Semua Sumber',
@@ -366,8 +370,10 @@ export const DICT: Record<Language, TranslationDict> = {
     syncOnlineBadge: 'Synced · online',
     syncOfflineBadge: 'local data · not synced',
     forceSyncBtn: 'Sync Now',
-    exportExcel: 'Export Excel (.xlsx)',
-    exportCsv: 'Export CSV',
+    exportExcel: 'Excel',
+    exportCsv: 'CSV',
+    exportPdf: 'PDF',
+    exportLabel: 'Export Data',
     searchPlaceholder: 'Search name, company, WhatsApp, city...',
     allInterests: 'All Interests',
     allSources: 'All Sources',

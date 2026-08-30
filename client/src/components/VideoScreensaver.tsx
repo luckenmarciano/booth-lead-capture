@@ -56,7 +56,9 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '32px'
+        gap: '20px',
+        padding: '32px',
+        boxSizing: 'border-box'
       }}
     >
       {/* Video Player Background if available (Supports YouTube & MP4/WebM) */}
@@ -142,7 +144,9 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
           maxWidth: '1200px',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -218,40 +222,44 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
         style={{
           position: 'relative',
           zIndex: 10,
+          flex: 1,
+          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
           textAlign: 'center',
-          gap: '20px',
-          margin: 'auto 0'
+          gap: '16px'
         }}
       >
-        <div
-          style={{
-            width: '96px',
-            height: '96px',
-            borderRadius: '50%',
-            border: '2px solid rgba(255, 255, 255, 0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            animation: 'sa-glow 2.4s ease-in-out infinite',
-            background: 'rgba(15, 47, 61, 0.5)',
-            backdropFilter: 'blur(12px)',
-            marginBottom: '10px'
-          }}
-        >
+        {(!settings.video_url || hasError) && (
           <div
             style={{
-              width: 0,
-              height: 0,
-              borderStyle: 'solid',
-              borderWidth: '18px 0 18px 28px',
-              borderColor: 'transparent transparent transparent #ffffff',
-              marginLeft: '6px'
+              width: '92px',
+              height: '92px',
+              borderRadius: '50%',
+              border: '2px solid rgba(255, 255, 255, 0.65)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              animation: 'sa-glow 2.4s ease-in-out infinite',
+              background: 'rgba(15, 47, 61, 0.5)',
+              backdropFilter: 'blur(12px)',
+              flexShrink: 0
             }}
-          />
-        </div>
+          >
+            <div
+              style={{
+                width: 0,
+                height: 0,
+                borderStyle: 'solid',
+                borderWidth: '18px 0 18px 28px',
+                borderColor: 'transparent transparent transparent #ffffff',
+                marginLeft: '6px'
+              }}
+            />
+          </div>
+        )}
 
         <div
           style={{
