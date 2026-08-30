@@ -1,0 +1,320 @@
+﻿@charset "UTF-8";
+
+/* ==========================================================================
+   SPILLASIA 2026 - LUXURY MINIMALIST EXHIBITION GUESTBOOK SYSTEM
+   ========================================================================== */
+
+:root {
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* SpillAsia Luxury Palette */
+  --sa-navy: #0f2f3d;
+  --sa-navy-dark: #0a1f29;
+  --sa-pine: #123a30;
+  --sa-green-dark: #1f5c4a;
+  --sa-green-emerald: #2f7d5c;
+  --sa-green-light: #e4f0e9;
+  --sa-green-border: #c8e0d3;
+
+  --sa-gold: #b8933e;
+  --sa-gold-dark: #8a6c25;
+  --sa-gold-light: #faf3e4;
+  --sa-gold-amber: #c9932e;
+  --sa-gold-border: #eddcb5;
+
+  --sa-bg: #f4f1ea;
+  --sa-bg-card: #fbf9f4;
+  --sa-bg-white: #ffffff;
+  --sa-border: #e6e0cd;
+  --sa-border-subtle: #eee9dc;
+
+  --sa-text-main: #1c2b28;
+  --sa-text-muted: #8a8371;
+  --sa-text-body: #4a453a;
+
+  --sa-radius-sm: 6px;
+  --sa-radius-md: 10px;
+  --sa-radius-lg: 16px;
+  --sa-radius-xl: 24px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  background-color: var(--sa-bg);
+  color: var(--sa-text-main);
+  min-height: 100vh;
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Keyframe Animations */
+@keyframes sa-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.92); }
+}
+
+@keyframes sa-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(184, 147, 62, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 16px rgba(184, 147, 62, 0);
+  }
+}
+
+@keyframes sa-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes sa-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+::-webkit-scrollbar-thumb {
+  background: #c9b896;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b8933e;
+}
+
+/* Clean Input & Form Styles */
+.sa-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--sa-border);
+  font-size: 13.5px;
+  font-family: var(--font-sans);
+  color: var(--sa-text-main);
+  background: #ffffff;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.sa-input:focus {
+  border-color: var(--sa-green-emerald);
+  box-shadow: 0 0 0 3px rgba(47, 125, 92, 0.15);
+}
+
+.sa-input::placeholder {
+  color: #a8a08e;
+}
+
+/* Interactive Product Interest Chip */
+.sa-interest-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--sa-border);
+  background: #ffffff;
+  color: var(--sa-text-main);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+  user-select: none;
+  width: 100%;
+}
+
+.sa-interest-chip:hover {
+  border-color: var(--sa-gold);
+  background: #faf8f2;
+}
+
+.sa-interest-chip.selected-oil {
+  border-color: var(--sa-green-dark);
+  background: var(--sa-green-light);
+  color: var(--sa-navy);
+}
+
+.sa-interest-chip.selected-slick {
+  border-color: var(--sa-gold);
+  background: var(--sa-gold-light);
+  color: var(--sa-navy);
+}
+
+.sa-check-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--sa-border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  transition: all 0.18s ease;
+}
+
+.sa-interest-chip.selected-oil .sa-check-box {
+  border-color: var(--sa-green-dark);
+  background: var(--sa-green-dark);
+  color: #ffffff;
+}
+
+.sa-interest-chip.selected-slick .sa-check-box {
+  border-color: var(--sa-gold);
+  background: var(--sa-gold);
+  color: #ffffff;
+}
+
+/* Buttons */
+.sa-btn-primary {
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(120deg, var(--sa-green-dark), var(--sa-green-emerald));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(31, 92, 74, 0.2);
+}
+
+.sa-btn-primary:hover {
+  background: linear-gradient(120deg, #164638, #25664a);
+  box-shadow: 0 6px 18px rgba(31, 92, 74, 0.3);
+  transform: translateY(-1px);
+}
+
+.sa-btn-primary:active {
+  transform: translateY(0);
+}
+
+.sa-btn-gold {
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(120deg, #a68132, #b8933e);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(184, 147, 62, 0.25);
+}
+
+.sa-btn-gold:hover {
+  background: linear-gradient(120deg, #947128, #a88334);
+  transform: translateY(-1px);
+}
+
+/* Kiosk Big CTA Button */
+.sa-kiosk-cta {
+  border-radius: 16px;
+  border: 1.5px solid var(--sa-gold);
+  background: linear-gradient(120deg, var(--sa-green-dark) 0%, var(--sa-green-emerald) 100%);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(31, 92, 74, 0.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sa-kiosk-cta:hover {
+  transform: scale(1.02);
+  box-shadow: 0 14px 34px rgba(31, 92, 74, 0.38);
+}
+
+.sa-kiosk-cta:active {
+  transform: scale(0.98);
+}
+
+/* Badges */
+.sa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.sa-badge-kiosk {
+  background: #e6eef2;
+  color: var(--sa-navy);
+}
+
+.sa-badge-hp {
+  background: var(--sa-green-light);
+  color: var(--sa-green-dark);
+}
+
+.sa-badge-synced {
+  background: var(--sa-green-light);
+  color: var(--sa-green-dark);
+}
+
+.sa-badge-pending {
+  background: var(--sa-gold-light);
+  color: var(--sa-gold-dark);
+}
+
+/* Glass & Card panels */
+.sa-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid var(--sa-border);
+  box-shadow: 0 4px 16px rgba(15, 47, 61, 0.04);
+}
+
+/* Print Styles for QR Standee */
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
