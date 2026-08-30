@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # 🎪 Booth Lead Capture - 1-Click Deployment Script for Linux VPS
 # ==============================================================================
@@ -53,6 +53,14 @@ mkdir -p data
 echo "🐳 Menjalankan Docker Compose build & up..."
 docker compose down || true
 docker compose up -d --build
+
+# Otomatis hubungkan ke network Caddy jika ada
+if docker ps --format '{{.Names}}' | grep -q 'gladhy-caddy-1'; then
+    echo "🔗 Menghubungkan container ke jaringan Caddy..."
+    CADDY_NET=$(docker inspect gladhy-caddy-1 --format '{{range $net,$v := .NetworkSettings.Networks}}{{$net}}{{end}}' | awk '{print $1}')
+    docker network connect "$CADDY_NET" booth-lead-capture 2>/dev/null || true
+    docker restart gladhy-caddy-1 2>/dev/null || true
+fi
 
 # 6. Tunggu inisialisasi container
 echo "⏳ Menunggu container aktif..."
