@@ -154,24 +154,19 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div
+              <img
+                src="/osct-logo.png"
+                alt="Oil Spill Combat Team"
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '11px',
-                  background: 'linear-gradient(135deg, #2f7d5c, #b8933e)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: 'var(--font-serif)',
-                  fontWeight: 700,
-                  fontSize: '20px',
-                  color: '#ffffff',
+                  width: '46px',
+                  height: '46px',
+                  objectFit: 'contain',
+                  flexShrink: 0,
+                  background: '#ffffff',
+                  borderRadius: '50%',
                   boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
                 }}
-              >
-                S
-              </div>
+              />
               <div>
                 <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '20px', color: '#ffffff', lineHeight: 1.2 }}>
                   {settings.company_name}

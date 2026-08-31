@@ -96,25 +96,18 @@ export const Navbar: React.FC<NavbarProps> = ({
     >
       {/* Brand & Title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => onSelectMode('kiosk')}>
-        <div
+        <img
+          src="/osct-logo.png"
+          alt="Oil Spill Combat Team"
           style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #2f7d5c, #b8933e)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'var(--font-serif)',
-            fontWeight: 700,
-            fontSize: '18px',
-            color: '#ffffff',
+            width: '40px',
+            height: '40px',
+            objectFit: 'contain',
             flex: 'none',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            background: '#ffffff',
+            borderRadius: '50%'
           }}
-        >
-          S
-        </div>
+        />
         <div>
           <div
             style={{

@@ -77,23 +77,16 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
       >
         {/* Brand & Event Identity */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
+          <img
+            src="/osct-logo.png"
+            alt="Oil Spill Combat Team"
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #1f5c4a 0%, #b8933e 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(31, 92, 74, 0.25)',
-              color: '#ffffff',
-              fontWeight: 800,
-              fontSize: '14px'
+              width: '42px',
+              height: '42px',
+              objectFit: 'contain',
+              flexShrink: 0
             }}
-          >
-            SA
-          </div>
+          />
           <div>
             <div
               style={{
