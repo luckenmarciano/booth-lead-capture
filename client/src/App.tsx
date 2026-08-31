@@ -145,7 +145,7 @@ export const App: React.FC = () => {
   const showAdminNavbar = currentMode === 'admin' || currentMode === 'standee';
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f1ea', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', backgroundColor: '#f4f1ea', display: 'flex', flexDirection: 'column' }}>
       {/* Video Screensaver Overlay (Touch-to-wake) */}
       {isScreensaverActive && (
         <VideoScreensaver

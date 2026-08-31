@@ -16,6 +16,7 @@ import { BoothSettings, Lead, Language } from '../types/lead';
 import { syncService } from '../services/syncService';
 import { SignatureCanvas } from './SignatureCanvas';
 import { DICT } from '../data/dictionary';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface MobileVisitorFormProps {
   settings: BoothSettings;
@@ -33,6 +34,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
   isSimOffline = false
 }) => {
   const t = DICT[lang];
+  const isMobile = useIsMobile();
 
   const [fullName, setFullName] = useState('');
   const [company, setCompany] = useState('');
@@ -133,7 +135,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         backgroundColor: '#f4f1ea',
         display: 'flex',
         flexDirection: 'column',
@@ -162,7 +164,9 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
             color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px'
           }}
         >
           <div>
@@ -180,9 +184,10 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
             </div>
             <div
               style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '20px',
-                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(18px, 5vw, 21px)',
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
                 lineHeight: 1.2
               }}
             >
@@ -268,7 +273,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
 
             <h2
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontSize: '22px',
                 fontWeight: 700,
                 color: '#0f2f3d',
@@ -447,7 +452,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
             </div>
 
             {/* 4. Email & Kota (Row) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', fontWeight: 700, color: '#0f2f3d', marginBottom: '6px' }}>
                   <Mail size={13} color="#1f5c4a" />
@@ -511,12 +516,13 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                       type="button"
                       onClick={() => toggleInterest(interest)}
                       style={{
-                        padding: '8px 12px',
+                        padding: '10px 14px',
+                        minHeight: '40px',
                         borderRadius: '999px',
                         border: isSelected ? '1.5px solid #1f5c4a' : '1px solid #d8d1bc',
                         backgroundColor: isSelected ? '#1f5c4a' : '#ffffff',
                         color: isSelected ? '#ffffff' : '#333333',
-                        fontSize: '11.5px',
+                        fontSize: '12.5px',
                         fontWeight: 600,
                         cursor: 'pointer',
                         display: 'inline-flex',
@@ -541,8 +547,9 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                 style={{
                   background: 'none',
                   border: 'none',
-                  padding: 0,
-                  fontSize: '12px',
+                  padding: '8px 2px',
+                  minHeight: '40px',
+                  fontSize: '12.5px',
                   fontWeight: 600,
                   color: '#1f5c4a',
                   cursor: 'pointer',
@@ -551,13 +558,16 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                   gap: '6px'
                 }}
               >
-                <PenTool size={13} />
+                <PenTool size={14} />
                 <span>{showSignature ? t.sigToggleHide : t.sigToggleShow}</span>
               </button>
 
               {showSignature && (
                 <div style={{ marginTop: '8px' }}>
-                  <SignatureCanvas onSaveSignature={(url) => setSignatureUrl(url)} lang={lang} />
+                  <SignatureCanvas
+                    onSave={(url) => setSignatureUrl(url)}
+                    initialData={signatureUrl}
+                  />
                 </div>
               )}
             </div>

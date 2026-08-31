@@ -12,6 +12,7 @@ import {
 import QRCode from 'qrcode';
 import { BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface QRStandeeGeneratorProps {
   settings: BoothSettings;
@@ -23,6 +24,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
   lang = 'id'
 }) => {
   const t = DICT[lang];
+  const isMobile = useIsMobile();
   const [sizeFormat, setSizeFormat] = useState<'A4' | 'A5'>('A5');
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [targetUrl, setTargetUrl] = useState<string>('');
@@ -78,7 +80,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
         }}
       >
         <div>
-          <div style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 600, color: '#0f2f3d' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 600, color: '#0f2f3d' }}>
             Generator Poster Standee Meja Booth
           </div>
           <div style={{ fontSize: '12px', color: '#8a8371' }}>
@@ -86,8 +88,8 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ display: 'flex', background: '#f4f1ea', padding: '3px', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', background: '#f4f1ea', padding: '3px', borderRadius: '8px', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={() => setSizeFormat('A5')}
@@ -134,16 +136,35 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
         </div>
       </div>
 
+      {/* Print isolation: only the standee sheet prints, at the chosen paper size */}
+      <style>{`
+        @media print {
+          @page { size: ${sizeFormat === 'A5' ? 'A5' : 'A4'} portrait; margin: 8mm; }
+          body * { visibility: hidden !important; }
+          #printable-standee, #printable-standee * { visibility: visible !important; }
+          #printable-standee {
+            position: absolute !important;
+            inset: 0 !important;
+            width: 100% !important;
+            min-height: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+          }
+        }
+      `}</style>
+
       {/* PRINTABLE STANDEE SHEET */}
       <div
         id="printable-standee"
         style={{
-          width: sizeFormat === 'A5' ? '460px' : '620px',
+          width: isMobile ? '100%' : sizeFormat === 'A5' ? '460px' : '620px',
+          maxWidth: sizeFormat === 'A5' ? '460px' : '620px',
           minHeight: sizeFormat === 'A5' ? '650px' : '880px',
           backgroundColor: '#ffffff',
           borderRadius: '20px',
           border: '1.5px solid #d8d0b8',
-          padding: sizeFormat === 'A5' ? '32px 28px' : '48px 40px',
+          padding: isMobile ? '28px 18px' : sizeFormat === 'A5' ? '32px 28px' : '48px 40px',
           boxShadow: '0 20px 60px rgba(15, 47, 61, 0.12)',
           display: 'flex',
           flexDirection: 'column',
@@ -195,7 +216,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
 
           <h1
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: sizeFormat === 'A5' ? '26px' : '34px',
               fontWeight: 700,
               color: '#0f2f3d',
@@ -271,7 +292,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
             borderRadius: '16px',
             padding: sizeFormat === 'A5' ? '14px 16px' : '18px 24px',
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))',
             gap: '10px',
             textAlign: 'center'
           }}

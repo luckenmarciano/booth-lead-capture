@@ -15,6 +15,7 @@ import {
 import { BoothSettings } from '../types/lead';
 import { updateSettingsApi } from '../services/api';
 import { offlineDB } from '../services/db';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [newInterestInput, setNewInterestInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleAddInterest = () => {
     if (!newInterestInput.trim()) return;
@@ -77,7 +79,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const tabBtnStyle = (tab: string) => ({
-    padding: '10px 16px',
+    padding: '10px 14px',
     borderRadius: '8px',
     border: 'none',
     backgroundColor: activeTab === tab ? '#0f2f3d' : 'transparent',
@@ -87,6 +89,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     cursor: 'pointer',
     textAlign: 'left' as const,
     width: '100%',
+    whiteSpace: 'nowrap' as const,
     transition: 'all 0.15s ease'
   });
 
@@ -114,7 +117,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           overflow: 'hidden',
           border: '1px solid #e6e0cd',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
-          maxHeight: '88vh',
+          maxHeight: '88dvh',
           display: 'flex',
           flexDirection: 'column'
         }}
@@ -135,7 +138,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', color: '#c9b896', fontWeight: 600 }}>
               Konfigurasi Booth Pameran
             </div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 600 }}>
               Pengaturan Sistem & Integrasi
             </div>
           </div>
@@ -144,8 +147,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             type="button"
             onClick={onClose}
             style={{
-              width: '36px',
-              height: '36px',
+              width: '40px',
+              height: '40px',
+              flexShrink: 0,
               borderRadius: '50%',
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               border: 'none',
@@ -160,18 +164,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
 
-        {/* Content with Sidebar Tabs */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Content with Sidebar Tabs (becomes a horizontal tab strip on mobile) */}
+        <div className="sa-set-body" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           {/* Left Tab List */}
           <div
+            className="sa-set-tabs"
             style={{
               width: '200px',
               backgroundColor: '#ffffff',
               borderRight: '1px solid #e6e0cd',
-              padding: '16px 12px',
+              padding: isMobile ? '10px' : '16px 12px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '4px',
+              gap: isMobile ? '6px' : '4px',
               flexShrink: 0
             }}
           >
@@ -334,10 +339,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     Daftar pilihan produk / solusi yang dapat dipilih oleh pengunjung saat mengisi formulir:
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <input
                       type="text"
                       className="sa-input"
+                      style={{ flex: '1 1 160px' }}
                       placeholder="Tambah minat produk baru..."
                       value={newInterestInput}
                       onChange={(e) => setNewInterestInput(e.target.value)}
@@ -450,7 +456,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               )}
 
               {/* Submit Buttons */}
-              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   onClick={onClose}

@@ -168,7 +168,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
                 }}
               />
               <div>
-                <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '20px', color: '#ffffff', lineHeight: 1.2 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '19px', letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2 }}>
                   {settings.company_name}
                 </div>
                 <div style={{ fontSize: '11px', color: '#c9b896', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -250,12 +250,12 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
 
             <h1
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontSize: 'clamp(28px, 5vw, 48px)',
-                fontWeight: 700,
+                fontWeight: 800,
                 color: '#ffffff',
-                letterSpacing: '0.3px',
-                lineHeight: 1.15,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.12,
                 maxWidth: '850px'
               }}
             >

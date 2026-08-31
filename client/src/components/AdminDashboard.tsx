@@ -25,6 +25,7 @@ import { Lead, LeadStats, BoothSettings, Language } from '../types/lead';
 import { offlineDB } from '../services/db';
 import { fetchLeads, fetchStats, deleteLeadApi, verifyAdminPinApi } from '../services/api';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { DICT } from '../data/dictionary';
 
 interface AdminDashboardProps {
@@ -39,6 +40,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenSettings
 }) => {
   const t = DICT[lang];
+  const isMobile = useIsMobile();
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
@@ -272,12 +274,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHtml(exportFileName('pdf'))}</title>` +
       `<link rel="preconnect" href="https://fonts.googleapis.com">` +
       `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` +
-      `<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
+      `<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
       `<style>` +
       `@page{size:A4 landscape;margin:12mm}` +
       `*{box-sizing:border-box}body{font-family:'Inter',Arial,Helvetica,sans-serif;color:#1c2b28;margin:0;-webkit-font-smoothing:antialiased}` +
       `.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0f2f3d;padding-bottom:8px;margin-bottom:12px}` +
-      `h1{font-family:'Fraunces',Georgia,'Times New Roman',serif;font-size:19px;font-weight:600;letter-spacing:-0.01em;margin:0;color:#0f2f3d}` +
+      `h1{font-family:'Archivo',Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.02em;margin:0;color:#0f2f3d}` +
       `.sub{font-size:11px;color:#555;margin-top:3px}` +
       `.meta{font-size:10px;color:#666;text-align:right}` +
       `table{width:100%;border-collapse:collapse;font-size:9px}` +
@@ -352,7 +354,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: '21px',
               fontWeight: 600,
               color: '#0f2f3d',
@@ -455,14 +457,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '16px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+            gap: '14px'
           }}
         >
           {/* 1. Total Pengunjung */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#1f5c4a', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 600, color: '#0f2f3d', lineHeight: 1.1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1 }}>
               {stats?.total ?? leads.length}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -473,7 +475,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* 2. Hari Ini */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#b8933e', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 600, color: '#0f2f3d', lineHeight: 1.1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1 }}>
               {stats?.today ?? 0}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -484,7 +486,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* 3. Menunggu Sync */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#c9932e', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 600, color: '#0f2f3d', lineHeight: 1.1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1 }}>
               {pendingCount}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -495,7 +497,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* 4. Minat Terbanyak */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2f7d5c', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 600, color: '#0f2f3d', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 600, color: '#0f2f3d', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {topInterestText}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -508,7 +510,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr)',
+            gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.6fr) minmax(0, 1fr)',
             gap: '18px',
             alignItems: 'start'
           }}
@@ -528,7 +530,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: '16px', fontWeight: 600, color: '#0f2f3d' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d' }}>
                   {t.tableTitle}
                 </div>
                 <div style={{ fontSize: '10.5px', color: '#2f7d5c', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -551,7 +553,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     type="button"
                     onClick={btn.fn}
                     style={{
-                      padding: '6px 11px',
+                      padding: '8px 12px',
+                      minHeight: '38px',
                       borderRadius: '8px',
                       border: '1px solid #d8d0b8',
                       backgroundColor: '#ffffff',
@@ -608,7 +611,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Table */}
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <table style={{ width: '100%', minWidth: '620px', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f4f0e3', textAlign: 'left' }}>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colName}</th>
@@ -686,7 +689,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 onClick={() => openWhatsAppChat(row)}
                                 title="Chat WhatsApp"
                                 style={{
-                                  padding: '5px 8px',
+                                  padding: '8px',
+                                  minWidth: '34px',
+                                  minHeight: '34px',
                                   borderRadius: '6px',
                                   border: 'none',
                                   backgroundColor: '#e4f0e9',
@@ -703,7 +708,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 onClick={() => handleDeleteLead(row.id)}
                                 title={t.deleteLead}
                                 style={{
-                                  padding: '5px 8px',
+                                  padding: '8px',
+                                  minWidth: '34px',
+                                  minHeight: '34px',
                                   borderRadius: '6px',
                                   border: 'none',
                                   backgroundColor: '#fee2e2',
@@ -730,7 +737,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Panel 1: Product Interest Breakdown */}
             <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', padding: '18px 20px' }}>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', fontWeight: 600, color: '#0f2f3d', marginBottom: '14px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', marginBottom: '14px' }}>
                 {t.interestPanelTitle}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -758,7 +765,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Panel 2: Data Source Breakdown */}
             <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', padding: '18px 20px' }}>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', fontWeight: 600, color: '#0f2f3d', marginBottom: '14px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', marginBottom: '14px' }}>
                 {t.sourcePanelTitle}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -786,7 +793,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Panel 3: Sync Status Panel (Dark Navy Card) */}
             <div style={{ backgroundColor: '#0f2f3d', borderRadius: '14px', padding: '18px 20px', color: '#ffffff' }}>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', fontWeight: 600, marginBottom: '12px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '12px' }}>
                 {t.syncStatusTitle}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', fontSize: '11.5px' }}>

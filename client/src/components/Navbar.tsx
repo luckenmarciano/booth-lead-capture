@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const t = DICT[lang];
 
   const tabBtnStyle = (active: boolean) => ({
-    padding: '8px 16px',
+    padding: '10px 16px',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   });
 
   const langBtnStyle = (active: boolean) => ({
-    padding: '5px 11px',
+    padding: '7px 12px',
     borderRadius: '6px',
     border: 'none',
     cursor: 'pointer',
@@ -111,7 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div>
           <div
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-display)',
               fontSize: '18px',
               fontWeight: 600,
               letterSpacing: '0.2px',
@@ -266,7 +266,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={onToggleFullscreen}
           title="Layar Penuh Kiosk"
           style={{
-            padding: '7px 9px',
+            padding: '10px',
+            minHeight: '38px',
+            minWidth: '38px',
             borderRadius: '8px',
             background: 'rgba(255, 255, 255, 0.08)',
             border: 'none',
@@ -286,7 +288,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={onOpenSettings}
           title="Pengaturan Booth"
           style={{
-            padding: '7px 9px',
+            padding: '10px',
+            minHeight: '38px',
+            minWidth: '38px',
             borderRadius: '8px',
             background: 'rgba(255, 255, 255, 0.08)',
             border: 'none',

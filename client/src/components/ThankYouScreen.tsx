@@ -98,9 +98,10 @@ END:VCARD`;
         <div>
           <h1
             style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '26px',
-              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(22px, 6vw, 26px)',
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
               color: '#0f2f3d',
               marginBottom: '6px'
             }}
@@ -124,7 +125,7 @@ END:VCARD`;
             marginTop: '8px'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
             <div>
               <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f2f3d' }}>
                 {lead.full_name}

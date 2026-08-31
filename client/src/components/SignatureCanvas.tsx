@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { RotateCcw, Check, PenTool } from 'lucide-react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { RotateCcw, PenTool } from 'lucide-react';
 
 interface SignatureCanvasProps {
   onSave: (dataUrl: string) => void;
@@ -15,63 +15,77 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isEmpty, setIsEmpty] = useState(true);
+  // Keep the latest strokes so a resize (e.g. phone rotation) can redraw them.
+  const lastDataRef = useRef<string>(initialData || '');
 
-  useEffect(() => {
+  const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Handle high DPI displays
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Style
-    ctx.strokeStyle = '#6366f1';
+    ctx.strokeStyle = '#0f2f3d';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    if (initialData) {
+    const src = lastDataRef.current;
+    if (src) {
       const img = new Image();
       img.onload = () => {
+        ctx.clearRect(0, 0, rect.width, rect.height);
         ctx.drawImage(img, 0, 0, rect.width, rect.height);
         setIsEmpty(false);
       };
-      img.src = initialData;
+      img.src = src;
     }
-  }, [initialData]);
+  }, []);
 
-  const getCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  useEffect(() => {
+    lastDataRef.current = initialData || lastDataRef.current;
+    setupCanvas();
+  }, [initialData, setupCanvas]);
+
+  useEffect(() => {
+    let raf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(setupCanvas);
+    };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, [setupCanvas]);
+
+  const getCoordinates = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-
     if ('touches' in e) {
       const touch = e.touches[0];
-      return {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      };
-    } else {
-      return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
     }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     e.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
-
     const { x, y } = getCoordinates(e);
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -79,14 +93,13 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     setIsEmpty(false);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const draw = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     if (!isDrawing) return;
     e.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
-
     const { x, y } = getCoordinates(e);
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -98,20 +111,20 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     const canvas = canvasRef.current;
     if (canvas) {
       const dataUrl = canvas.toDataURL('image/png');
-      onSave(dataUrl);
+      lastDataRef.current = dataUrl;
+      onSave?.(dataUrl);
     }
   };
 
   const handleClear = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
     const rect = canvas.getBoundingClientRect();
     ctx.clearRect(0, 0, rect.width, rect.height);
+    lastDataRef.current = '';
     setIsEmpty(true);
-    onSave('');
+    onSave?.('');
     onClear?.();
   };
 
@@ -119,9 +132,9 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     <div style={{ width: '100%' }}>
       <div
         style={{
-          border: '1px dashed rgba(255, 255, 255, 0.2)',
+          border: '1px dashed #c8bfa6',
           borderRadius: '12px',
-          background: 'rgba(15, 23, 42, 0.5)',
+          background: '#fbf9f4',
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -137,7 +150,7 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
           onTouchEnd={stopDrawing}
           style={{
             width: '100%',
-            height: '140px',
+            height: '150px',
             display: 'block',
             cursor: 'crosshair',
             touchAction: 'none'
@@ -153,18 +166,18 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              color: 'var(--text-muted)',
+              color: '#8a8371',
               pointerEvents: 'none',
-              fontSize: '0.85rem'
+              fontSize: '12.5px'
             }}
           >
-            <PenTool size={16} />
+            <PenTool size={15} />
             <span>Tanda tangan di sini dengan jari / stylus</span>
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px', gap: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
         <button
           type="button"
           onClick={handleClear}
@@ -172,18 +185,20 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '4px',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            background: 'rgba(30, 41, 59, 0.6)',
-            color: 'var(--text-secondary)',
-            fontSize: '0.75rem',
+            gap: '6px',
+            padding: '8px 14px',
+            minHeight: '36px',
+            borderRadius: '8px',
+            border: '1px solid #d8d0b8',
+            background: '#ffffff',
+            color: '#6b6455',
+            fontSize: '12px',
+            fontWeight: 600,
             cursor: isEmpty ? 'not-allowed' : 'pointer',
             opacity: isEmpty ? 0.5 : 1
           }}
         >
-          <RotateCcw size={12} />
+          <RotateCcw size={13} />
           <span>Hapus</span>
         </button>
       </div>

@@ -16,6 +16,7 @@ import { BoothSettings, Lead, Language } from '../types/lead';
 import { syncService } from '../services/syncService';
 import { SignatureCanvas } from './SignatureCanvas';
 import { DICT } from '../data/dictionary';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface VisitorFormModalProps {
   isOpen: boolean;
@@ -49,6 +50,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
   const [showSignature, setShowSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const isMobile = useIsMobile();
 
   const toggleInterest = (interest: string) => {
     if (selectedInterests.includes(interest)) {
@@ -129,7 +131,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
           overflow: 'hidden',
           border: '1px solid #e6e0cd',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
-          maxHeight: '90vh',
+          maxHeight: '90dvh',
           display: 'flex',
           flexDirection: 'column'
         }}
@@ -161,9 +163,10 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
             </div>
             <div
               style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: '20px',
-                fontWeight: 600
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(18px, 5vw, 20px)',
+                fontWeight: 800,
+                letterSpacing: '-0.02em'
               }}
             >
               {t.ctaFill}
@@ -174,8 +177,9 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
             type="button"
             onClick={onClose}
             style={{
-              width: '36px',
-              height: '36px',
+              width: '40px',
+              height: '40px',
+              flexShrink: 0,
               borderRadius: '50%',
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               border: 'none',
@@ -241,7 +245,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
             </div>
 
             {/* Grid: WhatsApp & Email */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
                   <Phone size={13} color="#2f7d5c" />
@@ -335,16 +339,17 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
                   background: 'transparent',
                   border: 'none',
                   color: '#1f5c4a',
-                  fontSize: '11.5px',
+                  fontSize: '12.5px',
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   cursor: 'pointer',
-                  padding: '4px 0'
+                  padding: '8px 2px',
+                  minHeight: '40px'
                 }}
               >
-                <PenTool size={13} />
+                <PenTool size={14} />
                 <span>{showSignature ? t.hideSignature : t.showSignature}</span>
               </button>
 

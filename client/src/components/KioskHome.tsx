@@ -55,7 +55,7 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         backgroundColor: '#fbf9f4',
         display: 'flex',
         flexDirection: 'column',
@@ -66,10 +66,12 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
       {/* 1. ELEGANT KIOSK HEADER (Distraction-Free) */}
       <header
         style={{
-          padding: '16px 28px',
+          padding: '14px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
           borderBottom: '1px solid #e6e0cd',
           backgroundColor: '#ffffff',
           boxShadow: '0 2px 10px rgba(15, 47, 61, 0.03)'
@@ -90,7 +92,7 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
           <div>
             <div
               style={{
-                fontFamily: 'var(--font-serif)',
+                fontFamily: 'var(--font-display)',
                 fontWeight: 700,
                 fontSize: '18px',
                 color: '#0f2f3d',
@@ -114,7 +116,7 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
         </div>
 
         {/* Right Action Tools: Language + Video + Fullscreen + Discreet Admin Lock */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           {/* Language Switcher */}
           <div
             style={{
@@ -129,7 +131,8 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
               type="button"
               onClick={() => onSetLang('id')}
               style={{
-                padding: '5px 10px',
+                padding: '8px 12px',
+                minHeight: '34px',
                 borderRadius: '6px',
                 border: 'none',
                 cursor: 'pointer',
@@ -146,7 +149,8 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
               type="button"
               onClick={() => onSetLang('en')}
               style={{
-                padding: '5px 10px',
+                padding: '8px 12px',
+                minHeight: '34px',
                 borderRadius: '6px',
                 border: 'none',
                 cursor: 'pointer',
@@ -168,7 +172,8 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
               onClick={onPlayVideo}
               title="Putar Video Company Profile"
               style={{
-                padding: '7px 12px',
+                padding: '9px 14px',
+                minHeight: '38px',
                 borderRadius: '8px',
                 border: '1px solid #e0d9c4',
                 backgroundColor: '#ffffff',
@@ -193,7 +198,9 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
             onClick={onToggleFullscreen}
             title="Layar Penuh Kiosk"
             style={{
-              padding: '7px 10px',
+              padding: '9px 11px',
+              minHeight: '38px',
+              minWidth: '38px',
               borderRadius: '8px',
               border: '1px solid #e0d9c4',
               backgroundColor: '#ffffff',
@@ -213,7 +220,9 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
             onClick={onOpenAdmin}
             title="Akses Admin Dashboard (Perlu PIN)"
             style={{
-              padding: '7px 10px',
+              padding: '9px 11px',
+              minHeight: '38px',
+              minWidth: '38px',
               borderRadius: '8px',
               border: '1px solid #e0d9c4',
               backgroundColor: '#ffffff',
@@ -284,11 +293,12 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
             <div>
               <h1
                 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(28px, 4vw, 42px)',
-                  fontWeight: 700,
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(27px, 4vw, 42px)',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
                   color: '#0f2f3d',
-                  lineHeight: 1.18,
+                  lineHeight: 1.15,
                   marginBottom: '12px'
                 }}
               >
@@ -479,10 +489,12 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
       {/* 3. SUBTLE FOOTER */}
       <footer
         style={{
-          padding: '12px 28px',
+          padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '6px 16px',
           borderTop: '1px solid #ede8db',
           fontSize: '11px',
           color: '#8a8371'
