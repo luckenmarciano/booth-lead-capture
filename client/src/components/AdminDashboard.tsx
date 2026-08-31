@@ -183,7 +183,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // \u2500\u2500 Data Export (CSV / Excel / PDF) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   const EXPORT_HEADERS = [
     'Nama Lengkap', 'Perusahaan', 'Jabatan', 'Kota', 'WhatsApp', 'Email',
-    'Minat Produk', 'Preferensi Follow-up', 'Sumber', 'Status Sync', 'Waktu'
+    'Minat Produk', 'Sumber', 'Status Sync', 'Waktu'
   ];
 
   const sourceLabel = (s: Lead['source']) =>
@@ -198,7 +198,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       l.whatsapp || '',
       l.email || '',
       (l.interests || []).join('; '),
-      l.follow_up_pref || '',
       sourceLabel(l.source),
       l.sync_status === 'synced' ? 'Tersinkron' : l.sync_status === 'failed' ? 'Gagal' : 'Menunggu',
       l.created_at ? new Date(l.created_at).toLocaleString('id-ID') : ''
