@@ -270,14 +270,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
     win.document.write(
       `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHtml(exportFileName('pdf'))}</title>` +
+      `<link rel="preconnect" href="https://fonts.googleapis.com">` +
+      `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` +
+      `<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
       `<style>` +
       `@page{size:A4 landscape;margin:12mm}` +
-      `*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#1c2b28;margin:0}` +
+      `*{box-sizing:border-box}body{font-family:'Inter',Arial,Helvetica,sans-serif;color:#1c2b28;margin:0;-webkit-font-smoothing:antialiased}` +
       `.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0f2f3d;padding-bottom:8px;margin-bottom:12px}` +
-      `h1{font-size:16px;margin:0;color:#0f2f3d}.sub{font-size:11px;color:#555;margin-top:2px}` +
+      `h1{font-family:'Fraunces',Georgia,'Times New Roman',serif;font-size:19px;font-weight:600;letter-spacing:-0.01em;margin:0;color:#0f2f3d}` +
+      `.sub{font-size:11px;color:#555;margin-top:3px}` +
       `.meta{font-size:10px;color:#666;text-align:right}` +
       `table{width:100%;border-collapse:collapse;font-size:9px}` +
-      `th{background:#0f2f3d;color:#fff;text-align:left;padding:5px 6px}` +
+      `th{background:#0f2f3d;color:#fff;text-align:left;padding:5px 6px;font-weight:600}` +
       `td{border-bottom:1px solid #e0e0e0;padding:4px 6px;vertical-align:top}` +
       `tr.alt td{background:#f7f5ef}` +
       `.foot{margin-top:14px;font-size:9px;color:#888;text-align:center}` +
@@ -287,7 +291,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       `<div class="meta">Diekspor: ${new Date().toLocaleString('id-ID')}<br>Total: ${leads.length} pengunjung</div></div>` +
       `<table><thead><tr>${EXPORT_HEADERS.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>` +
       `<div class="foot">Dihasilkan otomatis oleh Sistem Buku Tamu Booth Pameran</div>` +
-      `<script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script>` +
+      `<script>window.onload=function(){var done=false;var go=function(){if(done)return;done=true;setTimeout(function(){window.print()},250)};` +
+      `(document.fonts&&document.fonts.ready?document.fonts.ready.then(go):go());setTimeout(go,2500)}<\/script>` +
       `</body></html>`
     );
     win.document.close();
