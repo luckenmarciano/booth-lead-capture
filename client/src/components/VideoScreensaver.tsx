@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
 
@@ -22,14 +22,26 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
 }) => {
   const t = DICT[lang];
   const [hasError, setHasError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Screensaver video is always muted (browser autoplay requirement).
-  const isMuted = true;
+  // Play with sound only if the booth opted in; otherwise muted.
+  const soundOn = Boolean(settings.video_sound_enabled);
 
   const youtubeId = useMemo(() => getYouTubeId(settings.video_url), [settings.video_url]);
 
   // When a real video can play, show ONLY the full-bleed video (no chrome).
   const showVideo = !hasError && Boolean(settings.video_url);
+
+  // For MP4/WebM: if the browser blocks unmuted autoplay, fall back to muted
+  // playback so the screensaver never freezes on a black frame.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !showVideo || youtubeId) return;
+    el.play().catch(() => {
+      el.muted = true;
+      el.play().catch(() => {});
+    });
+  }, [showVideo, youtubeId, settings.video_url]);
 
   return (
     <div
@@ -53,7 +65,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
         /* ── FULL-BLEED VIDEO ONLY — no header, text, buttons or overlay ── */
         youtubeId ? (
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
+            src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=${soundOn ? 0 : 1}&loop=1&playlist=${youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
             title="Video Company Profile"
             style={{
               position: 'absolute',
@@ -72,10 +84,11 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
           />
         ) : (
           <video
+            ref={videoRef}
             src={settings.video_url}
             autoPlay
             loop
-            muted
+            muted={!soundOn}
             playsInline
             onError={() => setHasError(true)}
             style={{

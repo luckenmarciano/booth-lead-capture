@@ -28,6 +28,7 @@ export interface BoothSettings {
   date_range?: string;
   video_url: string;
   video_enabled: boolean;
+  video_sound_enabled?: boolean;
   idle_timeout_sec: number;
   default_interests: string[];
   gsheets_webhook_url: string;
@@ -61,6 +62,7 @@ const DEFAULT_SETTINGS: BoothSettings = {
   date_range: '09 – 11 Sept 2026',
   video_url: 'https://www.youtube.com/watch?v=xgznJcRRUOw',
   video_enabled: true,
+  video_sound_enabled: false,
   idle_timeout_sec: 60,
   default_interests: [
     'Oil Spill Combat Team',

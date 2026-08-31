@@ -58,7 +58,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     try {
       await offlineDB.saveSettingsLocally(formData);
       try {
-        await updateSettingsApi(formData);
+        // Server verifies the admin PIN before accepting settings changes.
+        await updateSettingsApi(formData, formData.admin_pin || currentSettings.admin_pin);
       } catch (remoteErr) {
         console.warn('[Settings] Offline mode, saved locally only:', remoteErr);
       }
@@ -275,6 +276,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       />
                       <span>Aktifkan Video Screensaver (Auto Looping)</span>
                     </label>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#0f2f3d', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(formData.video_sound_enabled)}
+                        onChange={(e) => setFormData({ ...formData, video_sound_enabled: e.target.checked })}
+                      />
+                      <span>Putar video dengan suara</span>
+                    </label>
+                    <div style={{ fontSize: '10.5px', color: '#8a8371', marginTop: '4px' }}>
+                      Default tanpa suara. Suara paling andal saat screensaver dibuka lewat tombol Video di layar utama; jika muncul otomatis dari idle, sebagian browser tetap membisukannya (aturan autoplay). Untuk file MP4/WebM hasilnya lebih konsisten dibanding YouTube.
+                    </div>
                   </div>
 
                   <div>

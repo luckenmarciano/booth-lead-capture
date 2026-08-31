@@ -27,6 +27,7 @@ export interface BoothSettings {
   date_range?: string;
   video_url: string;
   video_enabled: boolean;
+  video_sound_enabled?: boolean;
   idle_timeout_sec: number;
   default_interests: string[];
   gsheets_webhook_url: string;
