@@ -11,7 +11,10 @@
     "build:client": "npm run build --prefix client",
     "build:server": "npm run build --prefix server",
     "start": "node server/dist/index.js",
-    "install:all": "npm install && npm install --prefix server && npm install --prefix client"
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "android:build": "npm run build:client && npm run android:sync",
+    "android:sync": "cd client && npx cap sync android",
+    "android:open": "cd client && npx cap open android"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
@@ -23,7 +26,8 @@
     "kiosk",
     "offline-first",
     "pwa",
-    "vps-docker"
+    "vps-docker",
+    "android-app"
   ],
   "author": "Booth Lead Capture Team",
   "license": "MIT"

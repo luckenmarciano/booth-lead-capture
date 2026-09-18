@@ -8,6 +8,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { QRStandeeGenerator } from './components/QRStandeeGenerator';
 import { VideoScreensaver } from './components/VideoScreensaver';
 import { SettingsModal } from './components/SettingsModal';
+import { ModeLauncher } from './components/ModeLauncher';
 import { AppMode, BoothSettings, Lead, LeadStats, Language } from './types/lead';
 import { DEFAULT_SETTINGS } from './data/defaultData';
 import { offlineDB } from './services/db';
@@ -17,7 +18,7 @@ import { useNetworkStatus } from './hooks/useNetworkStatus';
 import { useFullscreen } from './hooks/useFullscreen';
 
 export const App: React.FC = () => {
-  // Check URL parameters for initial mode (e.g. ?mode=mobile from QR scan)
+  // Check URL parameters for initial mode (e.g. ?mode=mobile from QR scan or ?mode=launcher)
   const getInitialMode = (): { mode: AppMode; isDirectMobile: boolean } => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -25,6 +26,7 @@ export const App: React.FC = () => {
       if (urlMode === 'mobile' || urlMode === 'form') return { mode: 'mobile', isDirectMobile: true };
       if (urlMode === 'admin') return { mode: 'admin', isDirectMobile: false };
       if (urlMode === 'standee') return { mode: 'standee', isDirectMobile: false };
+      if (urlMode === 'launcher') return { mode: 'launcher', isDirectMobile: false };
     }
     return { mode: 'kiosk', isDirectMobile: false };
   };
@@ -141,8 +143,8 @@ export const App: React.FC = () => {
     resetTimer();
   };
 
-  // Only show Admin Navbar on Admin and Standee Generator screens
-  const showAdminNavbar = currentMode === 'admin' || currentMode === 'standee';
+  // Only show Admin Navbar on Admin, Standee Generator, and Launcher screens
+  const showAdminNavbar = currentMode === 'admin' || currentMode === 'standee' || currentMode === 'launcher';
 
   return (
     <div style={{ minHeight: '100dvh', backgroundColor: '#f4f1ea', display: 'flex', flexDirection: 'column' }}>
@@ -181,59 +183,74 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main style={{ flex: 1, position: 'relative' }}>
-        {/* VIEW 1: THANK YOU SCREEN (If lead just submitted on kiosk tablet) */}
-        {submittedLead && currentMode === 'kiosk' ? (
-          <ThankYouScreen
-            lead={submittedLead}
-            settings={settings}
+        {/* VIEW 0: MODE LAUNCHER SCREEN (Android / Desktop Selection & VPS Config) */}
+        {currentMode === 'launcher' ? (
+          <ModeLauncher
+            onSelectMode={(mode) => {
+              setCurrentMode(mode);
+              setSubmittedLead(null);
+            }}
             lang={lang}
-            onReset={handleResetAfterSubmission}
-            isKioskMode={true}
+            onSetLang={setLang}
+            onClose={() => setCurrentMode('kiosk')}
           />
         ) : (
           <>
-            {/* VIEW 2: KIOSK TABLET HOME (Distraction-Free) */}
-            {currentMode === 'kiosk' && (
-              <KioskHome
+            {/* VIEW 1: THANK YOU SCREEN (If lead just submitted on kiosk tablet) */}
+            {submittedLead && currentMode === 'kiosk' ? (
+              <ThankYouScreen
+                lead={submittedLead}
                 settings={settings}
-                stats={stats}
                 lang={lang}
-                onSetLang={setLang}
-                onOpenForm={() => setIsTabletFormOpen(true)}
-                onPlayVideo={() => setIsScreensaverActive(true)}
-                onOpenAdmin={() => setCurrentMode('admin')}
-                onToggleFullscreen={toggleFullscreen}
-                isSimOffline={isSimOffline}
+                onReset={handleResetAfterSubmission}
+                isKioskMode={true}
               />
-            )}
+            ) : (
+              <>
+                {/* VIEW 2: KIOSK TABLET HOME (Distraction-Free) */}
+                {currentMode === 'kiosk' && (
+                  <KioskHome
+                    settings={settings}
+                    stats={stats}
+                    lang={lang}
+                    onSetLang={setLang}
+                    onOpenForm={() => setIsTabletFormOpen(true)}
+                    onPlayVideo={() => setIsScreensaverActive(true)}
+                    onOpenAdmin={() => setCurrentMode('admin')}
+                    onToggleFullscreen={toggleFullscreen}
+                    isSimOffline={isSimOffline}
+                  />
+                )}
 
-            {/* VIEW 3: MOBILE VISITOR FORM (Clean & Standalone) */}
-            {currentMode === 'mobile' && (
-              <MobileVisitorForm
-                settings={settings}
-                lang={lang}
-                onSetLang={setLang}
-                onSuccess={handleFormSubmitted}
-                onBack={() => setCurrentMode('kiosk')}
-                isSimOffline={isSimOffline}
-              />
-            )}
+                {/* VIEW 3: MOBILE VISITOR FORM (Clean & Standalone) */}
+                {currentMode === 'mobile' && (
+                  <MobileVisitorForm
+                    settings={settings}
+                    lang={lang}
+                    onSetLang={setLang}
+                    onSuccess={handleFormSubmitted}
+                    onBack={() => setCurrentMode('kiosk')}
+                    isSimOffline={isSimOffline}
+                  />
+                )}
 
-            {/* VIEW 4: ADMIN DASHBOARD */}
-            {currentMode === 'admin' && (
-              <AdminDashboard
-                settings={settings}
-                lang={lang}
-                onOpenSettings={() => setIsSettingsOpen(true)}
-              />
-            )}
+                {/* VIEW 4: ADMIN DASHBOARD */}
+                {currentMode === 'admin' && (
+                  <AdminDashboard
+                    settings={settings}
+                    lang={lang}
+                    onOpenSettings={() => setIsSettingsOpen(true)}
+                  />
+                )}
 
-            {/* VIEW 5: PRINTABLE QR STANDEE MEJA */}
-            {currentMode === 'standee' && (
-              <QRStandeeGenerator
-                settings={settings}
-                lang={lang}
-              />
+                {/* VIEW 5: PRINTABLE QR STANDEE MEJA */}
+                {currentMode === 'standee' && (
+                  <QRStandeeGenerator
+                    settings={settings}
+                    lang={lang}
+                  />
+                )}
+              </>
             )}
           </>
         )}
@@ -252,9 +269,11 @@ export const App: React.FC = () => {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        currentSettings={settings}
+        settings={settings}
+        lang={lang}
         onSaveSettings={(newSettings) => {
-          setSettings(newSettings);
+          setSettings((prev) => ({ ...prev, ...newSettings }));
+          offlineDB.saveSettingsLocally(newSettings);
         }}
       />
     </div>

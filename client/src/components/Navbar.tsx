@@ -8,7 +8,8 @@ import {
   RefreshCw,
   Wifi,
   WifiOff,
-  Maximize2
+  Maximize2,
+  Grid
 } from 'lucide-react';
 import { AppMode, BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
@@ -181,6 +182,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <QrCode size={15} />
             <span>{t.navStandee}</span>
           </button>
+
+          <button
+            type="button"
+            style={tabBtnStyle(currentMode === 'launcher')}
+            onClick={() => onSelectMode('launcher')}
+            title="App Launcher & VPS Server Config"
+          >
+            <Grid size={15} />
+            <span>Launcher</span>
+          </button>
         </div>
       </div>
 
@@ -198,59 +209,63 @@ export const Navbar: React.FC<NavbarProps> = ({
             cursor: 'pointer',
             fontSize: '11px',
             fontWeight: 600,
-            letterSpacing: '0.2px',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            background: !isOnline || isSimOffline || pendingCount > 0 ? '#fff4de' : '#e4f0e9',
-            color: !isOnline || isSimOffline || pendingCount > 0 ? '#8a5a00' : '#1f5c4a',
-            transition: 'all 0.2s ease'
+            backgroundColor: isOnline ? 'rgba(31, 92, 74, 0.4)' : 'rgba(185, 28, 28, 0.4)',
+            color: '#ffffff',
+            transition: 'all 0.18s ease'
           }}
         >
           {isSyncing ? (
-            <RefreshCw size={13} className="animate-spin" style={{ animation: 'sa-spin 1s linear infinite' }} />
-          ) : !isOnline || isSimOffline ? (
-            <WifiOff size={13} color="#c9932e" />
+            <RefreshCw size={13} className="spin" />
+          ) : isOnline ? (
+            <Wifi size={13} color="#4ade80" />
           ) : (
-            <span
-              style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                backgroundColor: '#2f7d5c',
-                display: 'inline-block',
-                animation: 'sa-pulse 1.8s ease-in-out infinite'
-              }}
-            />
+            <WifiOff size={13} color="#f87171" />
           )}
+
           <span>
             {isSyncing
               ? 'Syncing...'
-              : pendingCount > 0
-              ? `${pendingCount} ${t.syncOfflineBadge}`
-              : isSimOffline
-              ? 'Offline Mode (Simulated)'
-              : t.syncOnlineBadge}
+              : isOnline
+              ? pendingCount > 0
+                ? `${pendingCount} Pending`
+                : 'Online'
+              : 'Offline Mode (Simulated)'}
           </span>
         </button>
 
-        {/* Language Switcher */}
-        <div
+        {/* Fullscreen Button */}
+        <button
+          type="button"
+          onClick={onToggleFullscreen}
+          title={t.subFullscreen}
           style={{
+            width: '34px',
+            height: '34px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            color: '#ffffff',
             display: 'flex',
-            gap: '3px',
-            background: 'rgba(255, 255, 255, 0.08)',
-            padding: '4px',
-            borderRadius: '9px'
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer'
           }}
         >
-          <button
-            type="button"
-            style={langBtnStyle(lang === 'id')}
-            onClick={() => onSetLang('id')}
-          >
-            ID
-          </button>
+          <Maximize2 size={16} />
+        </button>
+
+        {/* Language Selector */}
+        <div
+          style={{
+            display: 'inline-flex',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            padding: '3px',
+            borderRadius: '8px'
+          }}
+        >
           <button
             type="button"
             style={langBtnStyle(lang === 'en')}
@@ -258,52 +273,38 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             EN
           </button>
+          <button
+            type="button"
+            style={langBtnStyle(lang === 'id')}
+            onClick={() => onSetLang('id')}
+          >
+            ID
+          </button>
         </div>
 
-        {/* Fullscreen Button */}
-        <button
-          type="button"
-          onClick={onToggleFullscreen}
-          title="Fullscreen Kiosk"
-          style={{
-            padding: '10px',
-            minHeight: '38px',
-            minWidth: '38px',
-            borderRadius: '8px',
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: 'none',
-            color: '#ffffff',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <Maximize2 size={16} />
-        </button>
-
-        {/* Settings Gear */}
+        {/* Settings Button */}
         <button
           type="button"
           onClick={onOpenSettings}
-          title="Booth Settings"
+          title={t.settingsTitle}
           style={{
-            padding: '10px',
-            minHeight: '38px',
-            minWidth: '38px',
+            width: '36px',
+            height: '36px',
             borderRadius: '8px',
-            background: 'rgba(255, 255, 255, 0.08)',
             border: 'none',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
             color: '#ffffff',
-            cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            cursor: 'pointer'
           }}
         >
-          <Settings size={16} />
+          <Settings size={18} />
         </button>
       </div>
     </header>
   );
 };
+
+export default Navbar;

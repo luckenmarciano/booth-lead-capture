@@ -53,7 +53,7 @@ export interface LeadStats {
   hourlyTraffic: Record<string, number>;
 }
 
-export type AppMode = 'kiosk' | 'mobile' | 'admin' | 'standee';
+export type AppMode = 'kiosk' | 'mobile' | 'admin' | 'standee' | 'launcher';
 
 export interface SyncStatusState {
   isOnline: boolean;
