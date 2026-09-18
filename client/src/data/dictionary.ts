@@ -1,4 +1,4 @@
-﻿import { Language } from '../types/lead';
+import { Language } from '../types/lead';
 
 export interface TranslationDict {
   brandTag: string;
@@ -169,8 +169,8 @@ export const DICT: Record<Language, TranslationDict> = {
     formSubtitle: 'Terima kasih telah mengunjungi booth kami. Silakan lengkapi formulir di bawah ini.',
     offlineBanner: 'Mode Offline — data disimpan lokal & akan sinkron otomatis',
     thankYou: 'Terima Kasih atas Kunjungan Anda!',
-    thankYouTitle: 'Terima Kasih atas Kunjungan Anda!',
-    thankYouSubtitle: 'Data Anda telah tersimpan. Tim kami akan segera mengirimkan materi presentasi dan katalog produk pilihan Anda.',
+    thankYouTitle: 'Terima Kasih!',
+    thankYouSubtitle: 'Anda akan menerima katalog produk & konsultasi langsung dengan tim ahli kami.',
     statusOnlineMsg: 'Data Anda telah tersimpan dan tersinkron secara real-time.',
     statusOfflineMsg: 'Data tersimpan aman di perangkat ini dan akan tersinkron otomatis begitu koneksi tersedia.',
     fillAgain: 'Isi Buku Tamu Lagi',
@@ -297,8 +297,8 @@ export const DICT: Record<Language, TranslationDict> = {
     formSubtitle: 'Thank you for visiting our booth. Please complete the form below.',
     offlineBanner: 'Offline Mode — data saved locally & will sync automatically',
     thankYou: 'Thank You for Visiting!',
-    thankYouTitle: 'Thank You for Visiting!',
-    thankYouSubtitle: 'Your details have been saved. Our team will send presentation materials and product catalogs to your contact.',
+    thankYouTitle: 'Thank You!',
+    thankYouSubtitle: 'You will receive product catalogs & direct consultation with our experts.',
     statusOnlineMsg: 'Your data has been saved and synced in real-time.',
     statusOfflineMsg: 'Data is safely stored on this device and will sync automatically once connected.',
     fillAgain: 'Fill Guest Book Again',

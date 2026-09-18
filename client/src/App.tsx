@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { KioskHome } from './components/KioskHome';
 import { VisitorFormModal } from './components/VisitorFormModal';
@@ -31,7 +31,7 @@ export const App: React.FC = () => {
 
   const initial = getInitialMode();
   const [currentMode, setCurrentMode] = useState<AppMode>(initial.mode);
-  const [lang, setLang] = useState<Language>('id');
+  const [lang, setLang] = useState<Language>('en');
   const [isSimOffline, setIsSimOffline] = useState(false);
 
   const [settings, setSettings] = useState<BoothSettings>(DEFAULT_SETTINGS);
@@ -214,6 +214,7 @@ export const App: React.FC = () => {
                 lang={lang}
                 onSetLang={setLang}
                 onSuccess={handleFormSubmitted}
+                onBack={() => setCurrentMode('kiosk')}
                 isSimOffline={isSimOffline}
               />
             )}

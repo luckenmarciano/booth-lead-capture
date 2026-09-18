@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Printer,
   QrCode,
@@ -21,7 +21,7 @@ interface QRStandeeGeneratorProps {
 
 export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
   settings,
-  lang = 'id'
+  lang = 'en'
 }) => {
   const t = DICT[lang];
   const isMobile = useIsMobile();
@@ -81,10 +81,10 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
       >
         <div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 600, color: '#0f2f3d' }}>
-            Generator Poster Standee Meja Booth
+            Booth Desk Standee Generator
           </div>
           <div style={{ fontSize: '12px', color: '#8a8371' }}>
-            Cetak dan taruh poster QR ini di atas meja pameran agar pengunjung dapat scan langsung.
+            Print and place this QR poster on your exhibition table so visitors can scan directly.
           </div>
         </div>
 
@@ -104,7 +104,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
                 cursor: 'pointer'
               }}
             >
-              A5 (Meja / Desk)
+              A5 (Table / Desk)
             </button>
             <button
               type="button"
@@ -120,7 +120,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
                 cursor: 'pointer'
               }}
             >
-              A4 (Poster Dinding)
+              A4 (Wall Poster)
             </button>
           </div>
 
@@ -131,7 +131,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
             style={{ padding: '10px 18px', fontSize: '13px' }}
           >
             <Printer size={15} />
-            <span>Cetak Standee (PDF)</span>
+            <span>Print Standee (PDF)</span>
           </button>
         </div>
       </div>
@@ -258,7 +258,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
           {qrDataUrl ? (
             <img
               src={qrDataUrl}
-              alt="Scan QR Buku Tamu"
+              alt="Scan QR Guest Book"
               style={{
                 width: sizeFormat === 'A5' ? '180px' : '240px',
                 height: sizeFormat === 'A5' ? '180px' : '240px',
@@ -280,7 +280,7 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
               letterSpacing: '1px'
             }}
           >
-            SCAN DISINI
+            SCAN HERE
           </div>
         </div>
 
@@ -299,18 +299,18 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
         >
           <div>
             <div style={{ fontSize: '14px', fontWeight: 800, color: '#1f5c4a', marginBottom: '2px' }}>1</div>
-            <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#0f2f3d' }}>Buka Kamera HP</div>
-            <div style={{ fontSize: '9px', color: '#8a8371' }}>Arahkan ke QR di atas</div>
+            <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#0f2f3d' }}>Open Camera</div>
+            <div style={{ fontSize: '9px', color: '#8a8371' }}>Point at QR above</div>
           </div>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 800, color: '#1f5c4a', marginBottom: '2px' }}>2</div>
-            <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#0f2f3d' }}>Isi Buku Tamu</div>
-            <div style={{ fontSize: '9px', color: '#8a8371' }}>Cukup 30 detik</div>
+            <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#0f2f3d' }}>Fill Guest Book</div>
+            <div style={{ fontSize: '9px', color: '#8a8371' }}>Only takes 30 seconds</div>
           </div>
           <div>
             <div style={{ fontSize: '14px', fontWeight: 800, color: '#1f5c4a', marginBottom: '2px' }}>3</div>
-            <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#0f2f3d' }}>Dapatkan Katalog</div>
-            <div style={{ fontSize: '9px', color: '#8a8371' }}>& Konsultasi Gratis</div>
+            <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#0f2f3d' }}>Get Catalog</div>
+            <div style={{ fontSize: '9px', color: '#8a8371' }}>& Free Consultation</div>
           </div>
         </div>
 

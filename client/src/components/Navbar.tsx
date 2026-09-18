@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   Tablet,
   Smartphone,
@@ -190,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={onForceSync}
-          title={isOnline ? 'Online - Klik untuk sinkronkan manual' : 'Offline - Klik untuk coba sinkronkan'}
+          title={isOnline ? 'Online — Click to sync manually' : 'Offline — Click to try syncing'}
           style={{
             padding: '6px 12px',
             borderRadius: '999px',
@@ -225,11 +225,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
           <span>
             {isSyncing
-              ? 'Menyinkronkan...'
+              ? 'Syncing...'
               : pendingCount > 0
               ? `${pendingCount} ${t.syncOfflineBadge}`
               : isSimOffline
-              ? 'Mode Offline (Simulasi)'
+              ? 'Offline Mode (Simulated)'
               : t.syncOnlineBadge}
           </span>
         </button>
@@ -264,7 +264,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={onToggleFullscreen}
-          title="Layar Penuh Kiosk"
+          title="Fullscreen Kiosk"
           style={{
             padding: '10px',
             minHeight: '38px',
@@ -286,7 +286,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={onOpenSettings}
-          title="Pengaturan Booth"
+          title="Booth Settings"
           style={{
             padding: '10px',
             minHeight: '38px',

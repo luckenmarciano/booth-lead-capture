@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   User,
   Building,
@@ -9,7 +9,8 @@ import {
   Send,
   PenTool,
   CheckCircle2,
-  RotateCcw
+  RotateCcw,
+  ArrowLeft
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { BoothSettings, Lead, Language } from '../types/lead';
@@ -23,6 +24,7 @@ interface MobileVisitorFormProps {
   lang: Language;
   onSetLang?: (lang: Language) => void;
   onSuccess: (lead: Lead) => void;
+  onBack?: () => void;
   isSimOffline?: boolean;
 }
 
@@ -31,6 +33,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
   lang,
   onSetLang,
   onSuccess,
+  onBack,
   isSimOffline = false
 }) => {
   const t = DICT[lang];
@@ -169,29 +172,54 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
             gap: '10px'
           }}
         >
-          <div>
-            <div
-              style={{
-                fontSize: '10px',
-                letterSpacing: '1.5px',
-                textTransform: 'uppercase',
-                color: '#c9b896',
-                marginBottom: '3px',
-                fontWeight: 700
-              }}
-            >
-              {settings.company_name || 'SpillAsia 2026'} • {settings.booth_id}
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(18px, 5vw, 21px)',
-                fontWeight: 800,
-                letterSpacing: '-0.02em',
-                lineHeight: 1.2
-              }}
-            >
-              {t.formTitle}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Back Button */}
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '50%',
+                  border: '1.5px solid rgba(255,255,255,0.3)',
+                  background: 'rgba(255,255,255,0.12)',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
+                title="Back"
+              >
+                <ArrowLeft size={16} />
+              </button>
+            )}
+            <div>
+              <div
+                style={{
+                  fontSize: '10px',
+                  letterSpacing: '1.5px',
+                  textTransform: 'uppercase',
+                  color: '#c9b896',
+                  marginBottom: '3px',
+                  fontWeight: 700
+                }}
+              >
+                {settings.company_name || 'SpillAsia 2026'} • {settings.booth_id}
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(18px, 5vw, 21px)',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2
+                }}
+              >
+                {t.formTitle}
+              </div>
             </div>
           </div>
 
@@ -252,7 +280,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
               flexDirection: 'column',
               alignItems: 'center',
               textAlign: 'center',
-              gap: '14px'
+              gap: '16px'
             }}
           >
             <div
@@ -280,55 +308,14 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                 margin: 0
               }}
             >
-              {t.thankYouTitle}
+              {lastSubmittedLead
+                ? (lang === 'id' ? `Terima Kasih, ${lastSubmittedLead.full_name}!` : `Thank You, ${lastSubmittedLead.full_name}!`)
+                : t.thankYouTitle}
             </h2>
 
-            <p style={{ fontSize: '13px', color: '#6b6455', margin: 0, maxWidth: '320px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '13.5px', color: '#6b6455', margin: 0, maxWidth: '340px', lineHeight: 1.5 }}>
               {t.thankYouSubtitle}
             </p>
-
-            {/* Summary Badge */}
-            {lastSubmittedLead && (
-              <div
-                style={{
-                  width: '100%',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '14px',
-                  padding: '16px',
-                  border: '1px solid #e6e0cd',
-                  textAlign: 'left',
-                  fontSize: '12px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ fontWeight: 700, color: '#0f2f3d', fontSize: '13.5px' }}>
-                  {lastSubmittedLead.full_name}
-                </div>
-                {lastSubmittedLead.company !== '-' && (
-                  <div style={{ color: '#6b6455' }}>🏢 {lastSubmittedLead.company}</div>
-                )}
-                <div style={{ color: '#1f5c4a', fontWeight: 600 }}>💬 {lastSubmittedLead.whatsapp}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                  {lastSubmittedLead.interests.map((it, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        fontSize: '10px',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        backgroundColor: '#e4f0e9',
-                        color: '#1f5c4a',
-                        fontWeight: 600
-                      }}
-                    >
-                      {it}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Reset / Fill Again Button */}
             <button
