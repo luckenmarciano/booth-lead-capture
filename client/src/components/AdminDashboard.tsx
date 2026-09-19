@@ -24,6 +24,7 @@ import {
 import { Lead, LeadStats, BoothSettings, Language } from '../types/lead';
 import { offlineDB } from '../services/db';
 import { fetchLeads, fetchStats, deleteLeadApi, verifyAdminPinApi } from '../services/api';
+import { exportToExcel as runExportToExcel, exportToPdf as runExportToPdf, exportToCsv as runExportToCsv } from '../services/exportService';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { DICT } from '../data/dictionary';
@@ -54,6 +55,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [selectedSource, setSelectedSource] = useState('all');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [toastMsg, setToastMsg] = useState('');
+  const [isExporting, setIsExporting] = useState<'csv' | 'excel' | 'pdf' | null>(null);
 
   const { isOnline, isSyncing, pendingCount, triggerSync } = useNetworkStatus();
 
@@ -183,122 +185,58 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // \u2500\u2500 Data Export (CSV / Excel / PDF) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  const EXPORT_HEADERS = [
-    'Full Name', 'Company', 'Job Title', 'City', 'WhatsApp', 'Email',
-    'Product Interest', 'Source', 'Sync Status', 'Time'
-  ];
-
-  const sourceLabel = (s: Lead['source']) =>
-    s === 'kiosk_tablet' ? 'Kiosk Tablet' : s === 'mobile_qr' ? 'Mobile QR' : 'Manual Admin';
-
-  const buildExportRows = (): string[][] =>
-    leads.map((l) => [
-      l.full_name || '',
-      l.company || '',
-      l.job_title || '',
-      l.city || '',
-      l.whatsapp || '',
-      l.email || '',
-      (l.interests || []).join('; '),
-      sourceLabel(l.source),
-      l.sync_status === 'synced' ? 'Synced' : l.sync_status === 'failed' ? 'Failed' : 'Pending',
-      l.created_at ? new Date(l.created_at).toLocaleString('en-US') : ''
-    ]);
-
-  const exportFileName = (ext: string) =>
-    `leads_${(settings.company_name || 'booth').replace(/[^\w]+/g, '_')}_${settings.booth_id || 'booth'}_${new Date().toISOString().split('T')[0]}.${ext}`;
-
-  const downloadBlob = (content: BlobPart, mime: string, filename: string) => {
-    const url = URL.createObjectURL(new Blob([content], { type: mime }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
-
-  const escapeHtml = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  const exportToCsv = () => {
+  const handleExportCsv = async () => {
     if (leads.length === 0) {
       showToast(t.noData);
       return;
     }
-    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const csv =
-      '\uFEFF' +
-      [EXPORT_HEADERS, ...buildExportRows()].map((r) => r.map(esc).join(',')).join('\r\n');
-    downloadBlob(csv, 'text/csv;charset=utf-8', exportFileName('csv'));
-    showToast(lang === 'id' ? 'File CSV berhasil diunduh' : 'CSV file downloaded');
+    setIsExporting('csv');
+    try {
+      const res = await runExportToCsv(leads, settings, lang);
+      if (res.success) {
+        showToast(lang === 'id' ? `File CSV berhasil diunduh (${res.filename})` : `CSV file downloaded (${res.filename})`);
+      }
+    } catch (err: any) {
+      showToast(lang === 'id' ? 'Gagal mengekspor CSV' : 'Failed to export CSV');
+    } finally {
+      setIsExporting(null);
+    }
   };
 
-  const exportToExcel = () => {
+  const handleExportExcel = async () => {
     if (leads.length === 0) {
       showToast(t.noData);
       return;
     }
-    const body = buildExportRows()
-      .map((r) => `<tr>${r.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`)
-      .join('');
-    const table =
-      `<table border="1"><thead><tr>${EXPORT_HEADERS.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>`;
-    const html =
-      `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">` +
-      `<head><meta charset="utf-8">` +
-      `<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>` +
-      `<x:Name>Leads</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>` +
-      `</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->` +
-      `<style>th{background:#0f2f3d;color:#fff;font-weight:bold}td,th{border:1px solid #ccc;padding:4px 8px;font-family:Calibri,Arial;mso-number-format:"\\@"}</style>` +
-      `</head><body>${table}</body></html>`;
-    downloadBlob('\uFEFF' + html, 'application/vnd.ms-excel', exportFileName('xls'));
-    showToast(lang === 'id' ? 'File Excel berhasil diunduh' : 'Excel file downloaded');
+    setIsExporting('excel');
+    try {
+      const res = await runExportToExcel(leads, settings, lang);
+      if (res.success) {
+        showToast(lang === 'id' ? `File Excel (.xlsx) berhasil diunduh (${res.filename})` : `Excel (.xlsx) downloaded (${res.filename})`);
+      }
+    } catch (err: any) {
+      showToast(lang === 'id' ? 'Gagal mengekspor Excel' : 'Failed to export Excel');
+    } finally {
+      setIsExporting(null);
+    }
   };
 
-  const exportToPdf = () => {
+  const handleExportPdf = async () => {
     if (leads.length === 0) {
       showToast(t.noData);
       return;
     }
-    const body = buildExportRows()
-      .map((r, i) => `<tr class="${i % 2 ? 'alt' : ''}">${r.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`)
-      .join('');
-    const win = window.open('', '_blank');
-    if (!win) {
-      showToast(lang === 'id' ? 'Popup diblokir. Izinkan popup untuk ekspor PDF.' : 'Popup blocked. Allow popups to export PDF.');
-      return;
+    setIsExporting('pdf');
+    try {
+      const res = await runExportToPdf(leads, settings, lang);
+      if (res.success) {
+        showToast(lang === 'id' ? `File PDF (.pdf) berhasil diunduh (${res.filename})` : `PDF (.pdf) downloaded (${res.filename})`);
+      }
+    } catch (err: any) {
+      showToast(lang === 'id' ? 'Gagal mengekspor PDF' : 'Failed to export PDF');
+    } finally {
+      setIsExporting(null);
     }
-    win.document.write(
-      `<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHtml(exportFileName('pdf'))}</title>` +
-      `<link rel="preconnect" href="https://fonts.googleapis.com">` +
-      `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` +
-      `<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">` +
-      `<style>` +
-      `@page{size:A4 landscape;margin:12mm}` +
-      `*{box-sizing:border-box}body{font-family:'Inter',Arial,Helvetica,sans-serif;color:#1c2b28;margin:0;-webkit-font-smoothing:antialiased}` +
-      `.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0f2f3d;padding-bottom:8px;margin-bottom:12px}` +
-      `h1{font-family:'Archivo',Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.02em;margin:0;color:#0f2f3d}` +
-      `.sub{font-size:11px;color:#555;margin-top:3px}` +
-      `.meta{font-size:10px;color:#666;text-align:right}` +
-      `table{width:100%;border-collapse:collapse;font-size:9px}` +
-      `th{background:#0f2f3d;color:#fff;text-align:left;padding:5px 6px;font-weight:600}` +
-      `td{border-bottom:1px solid #e0e0e0;padding:4px 6px;vertical-align:top}` +
-      `tr.alt td{background:#f7f5ef}` +
-      `.foot{margin-top:14px;font-size:9px;color:#888;text-align:center}` +
-      `</style></head><body>` +
-      `<div class="head"><div><h1>Visitor Data — ${escapeHtml(settings.company_name || '')}</h1>` +
-      `<div class="sub">${escapeHtml(settings.booth_id || '')} · ${escapeHtml(settings.kiosk_venue || '')}</div></div>` +
-      `<div class="meta">Exported: ${new Date().toLocaleString('en-US')}<br>Total: ${leads.length} visitor(s)</div></div>` +
-      `<table><thead><tr>${EXPORT_HEADERS.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>` +
-      `<div class="foot">Auto-generated by Booth Exhibition Digital Guest Book System</div>` +
-      `<script>window.onload=function(){var done=false;var go=function(){if(done)return;done=true;setTimeout(function(){window.print()},250)};` +
-      `(document.fonts&&document.fonts.ready?document.fonts.ready.then(go):go());setTimeout(go,2500)}<\/script>` +
-      `</body></html>`
-    );
-    win.document.close();
-    showToast(lang === 'id' ? 'Menyiapkan PDF untuk dicetak / disimpan...' : 'Preparing PDF to print / save...');
   };
 
   const openWhatsAppChat = (lead: Lead) => {
@@ -544,30 +482,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {t.exportLabel}:
                 </span>
                 {([
-                  { key: 'csv', label: t.exportCsv, icon: <Download size={13} />, fn: exportToCsv },
-                  { key: 'excel', label: t.exportExcel, icon: <FileSpreadsheet size={13} />, fn: exportToExcel },
-                  { key: 'pdf', label: t.exportPdf, icon: <FileText size={13} />, fn: exportToPdf }
+                  { key: 'csv', label: t.exportCsv, icon: <Download size={13} />, fn: handleExportCsv },
+                  { key: 'excel', label: t.exportExcel, icon: <FileSpreadsheet size={13} />, fn: handleExportExcel },
+                  { key: 'pdf', label: t.exportPdf, icon: <FileText size={13} />, fn: handleExportPdf }
                 ] as const).map((btn) => (
                   <button
                     key={btn.key}
                     type="button"
+                    disabled={isExporting !== null}
                     onClick={btn.fn}
                     style={{
                       padding: '8px 12px',
                       minHeight: '38px',
                       borderRadius: '8px',
                       border: '1px solid #d8d0b8',
-                      backgroundColor: '#ffffff',
+                      backgroundColor: isExporting === btn.key ? '#f4f0e3' : '#ffffff',
                       color: '#0f2f3d',
                       fontSize: '11.5px',
                       fontWeight: 600,
-                      cursor: 'pointer',
+                      cursor: isExporting !== null ? 'wait' : 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '5px'
+                      gap: '5px',
+                      opacity: isExporting && isExporting !== btn.key ? 0.6 : 1
                     }}
                   >
-                    {btn.icon}
+                    {isExporting === btn.key ? (
+                      <RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} />
+                    ) : (
+                      btn.icon
+                    )}
                     <span>{btn.label}</span>
                   </button>
                 ))}

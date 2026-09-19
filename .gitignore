@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 **/node_modules/
 dist/
 client/dist/
@@ -12,3 +12,4 @@ server/dist/
 *.log
 .DS_Store
 Thumbs.db
+.idea/
