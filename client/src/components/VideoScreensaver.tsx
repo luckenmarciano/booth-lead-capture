@@ -2,6 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
 
+import { offlineDB } from '../services/db';
+
 interface VideoScreensaverProps {
   settings: BoothSettings;
   lang: Language;
@@ -22,17 +24,69 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
 }) => {
   const t = DICT[lang];
   const [hasError, setHasError] = useState(false);
+  const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null);
+  const [isLoadingLocal, setIsLoadingLocal] = useState(
+    settings.video_source_type === 'local' || Boolean(settings.video_local_name)
+  );
   const videoRef = useRef<HTMLVideoElement>(null);
+  const currentBlobUrlRef = useRef<string | null>(null);
+
+  // Load local video blob from IndexedDB if requested or available
+  useEffect(() => {
+    let activeUrl: string | null = null;
+    let isMounted = true;
+
+    const loadLocal = async () => {
+      if (settings.video_source_type === 'url' && !settings.video_local_name) {
+        setIsLoadingLocal(false);
+        return;
+      }
+
+      try {
+        const media = await offlineDB.getVideoMedia();
+        if (media && media.blob && isMounted) {
+          activeUrl = URL.createObjectURL(media.blob);
+          currentBlobUrlRef.current = activeUrl;
+          setLocalVideoUrl(activeUrl);
+        }
+      } catch (err) {
+        console.warn('[VideoScreensaver] Error loading local video blob:', err);
+      } finally {
+        if (isMounted) setIsLoadingLocal(false);
+      }
+    };
+
+    loadLocal();
+
+    return () => {
+      isMounted = false;
+      if (activeUrl) {
+        URL.revokeObjectURL(activeUrl);
+      }
+      if (currentBlobUrlRef.current) {
+        URL.revokeObjectURL(currentBlobUrlRef.current);
+        currentBlobUrlRef.current = null;
+      }
+    };
+  }, [settings.video_source_type, settings.video_local_name]);
+
+  // Determine effective video source
+  const isLocalSource = settings.video_source_type === 'local' || (Boolean(localVideoUrl) && !settings.video_url);
+  const effectiveUrl = (isLocalSource && localVideoUrl) ? localVideoUrl : (settings.video_url || localVideoUrl || '');
+  const isLocalPlayback = Boolean(localVideoUrl && effectiveUrl === localVideoUrl);
+
+  const youtubeId = useMemo(() => {
+    if (isLocalPlayback) return null;
+    return getYouTubeId(effectiveUrl);
+  }, [effectiveUrl, isLocalPlayback]);
 
   // Play with sound only if the booth opted in; otherwise muted.
   const soundOn = Boolean(settings.video_sound_enabled);
 
-  const youtubeId = useMemo(() => getYouTubeId(settings.video_url), [settings.video_url]);
-
   // When a real video can play, show ONLY the full-bleed video (no chrome).
-  const showVideo = !hasError && Boolean(settings.video_url);
+  const showVideo = !hasError && Boolean(effectiveUrl) && !isLoadingLocal;
 
-  // For MP4/WebM: if the browser blocks unmuted autoplay, fall back to muted
+  // For MP4/WebM/Local Blob: if the browser blocks unmuted autoplay, fall back to muted
   // playback so the screensaver never freezes on a black frame.
   useEffect(() => {
     const el = videoRef.current;
@@ -41,7 +95,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
       el.muted = true;
       el.play().catch(() => {});
     });
-  }, [showVideo, youtubeId, settings.video_url]);
+  }, [showVideo, youtubeId, effectiveUrl]);
 
   return (
     <div
@@ -85,7 +139,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
         ) : (
           <video
             ref={videoRef}
-            src={settings.video_url}
+            src={effectiveUrl}
             autoPlay
             loop
             muted={!soundOn}

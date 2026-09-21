@@ -1,10 +1,11 @@
-﻿import { Lead, BoothSettings } from '../types/lead';
+import { Lead, BoothSettings } from '../types/lead';
 import { DEFAULT_SETTINGS, SAMPLE_INITIAL_LEADS } from '../data/defaultData';
 
 const DB_NAME = 'BoothLeadCaptureDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_LEADS = 'leads';
 const STORE_SETTINGS = 'settings';
+const STORE_MEDIA = 'media';
 
 class OfflineDB {
   private dbPromise: Promise<IDBDatabase> | null = null;
@@ -32,6 +33,9 @@ class OfflineDB {
         }
         if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
           db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+        }
+        if (!db.objectStoreNames.contains(STORE_MEDIA)) {
+          db.createObjectStore(STORE_MEDIA, { keyPath: 'id' });
         }
       };
 
@@ -197,6 +201,85 @@ class OfflineDB {
     } catch {
       return [];
     }
+  }
+
+  // --- MEDIA / LOCAL VIDEO STORAGE ---
+  public async saveVideoMedia(
+    file: Blob | File,
+    name: string,
+    type: string,
+    size: number
+  ): Promise<{ name: string; size: number; type: string }> {
+    const db = await this.getDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_MEDIA, 'readwrite');
+      const store = tx.objectStore(STORE_MEDIA);
+      const record = {
+        id: 'screensaver_video',
+        blob: file,
+        name: name || 'video.mp4',
+        type: type || 'video/mp4',
+        size: size || file.size,
+        updated_at: new Date().toISOString()
+      };
+      store.put(record);
+      tx.oncomplete = () => {
+        resolve({
+          name: record.name,
+          size: record.size,
+          type: record.type
+        });
+      };
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  public async getVideoMedia(): Promise<{
+    blob: Blob;
+    name: string;
+    type: string;
+    size: number;
+    updated_at: string;
+  } | null> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_MEDIA, 'readonly');
+        const store = tx.objectStore(STORE_MEDIA);
+        const req = store.get('screensaver_video');
+        req.onsuccess = () => {
+          if (req.result && req.result.blob) {
+            resolve(req.result);
+          } else {
+            resolve(null);
+          }
+        };
+        req.onerror = () => reject(req.error);
+      });
+    } catch (err) {
+      console.warn('[IndexedDB] getVideoMedia error:', err);
+      return null;
+    }
+  }
+
+  public async deleteVideoMedia(): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_MEDIA, 'readwrite');
+        const store = tx.objectStore(STORE_MEDIA);
+        store.delete('screensaver_video');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      console.warn('[IndexedDB] deleteVideoMedia error:', err);
+    }
+  }
+
+  public async hasVideoMedia(): Promise<boolean> {
+    const media = await this.getVideoMedia();
+    return Boolean(media && media.blob);
   }
 }
 

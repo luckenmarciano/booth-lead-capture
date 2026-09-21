@@ -28,6 +28,10 @@ export interface BoothSettings {
   video_url: string;
   video_enabled: boolean;
   video_sound_enabled?: boolean;
+  video_source_type?: 'local' | 'url';
+  video_local_name?: string;
+  video_local_size?: number;
+  video_local_updated_at?: string;
   idle_timeout_sec: number;
   default_interests: string[];
   gsheets_webhook_url: string;
