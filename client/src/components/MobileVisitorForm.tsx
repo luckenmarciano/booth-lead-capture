@@ -165,7 +165,8 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
           flexDirection: 'column'
         }}
       >
-        {/* Header Banner */}
+        {/* Header Banner (hidden on the thank-you screen) */}
+        {!isSubmitted && (
         <div
           style={{
             background: 'linear-gradient(120deg, #0f2f3d 0%, #1f5c4a 100%)',
@@ -276,6 +277,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
             </div>
           )}
         </div>
+        )}
 
         {/* SUCCESS STATE / THANK YOU SCREEN */}
         {isSubmitted ? (
