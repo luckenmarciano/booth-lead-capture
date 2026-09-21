@@ -79,26 +79,6 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
       >
         {/* Brand & Event Identity */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img
-            src="/osct-logo.png"
-            alt="Oil Spill Combat Team"
-            style={{
-              width: '42px',
-              height: '42px',
-              objectFit: 'contain',
-              flexShrink: 0
-            }}
-          />
-          <img
-            src="/sli-logo.png"
-            alt="SLICKBAR"
-            style={{
-              width: '42px',
-              height: '42px',
-              objectFit: 'contain',
-              flexShrink: 0
-            }}
-          />
           <div>
             <div
               style={{
@@ -277,6 +257,35 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
               gap: '20px'
             }}
           >
+            {/* Brand Lockup: OSCT + SLICKBAR */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '24px',
+                flexWrap: 'wrap'
+              }}
+            >
+              <img
+                src="/osct-logo.png"
+                alt="Oil Spill Combat Team"
+                style={{
+                  height: 'clamp(88px, 11vw, 128px)',
+                  width: 'auto',
+                  objectFit: 'contain'
+                }}
+              />
+              <img
+                src="/sli-logo.png"
+                alt="SLICKBAR"
+                style={{
+                  height: 'clamp(88px, 11vw, 128px)',
+                  width: 'auto',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
+
             {/* Event Badge */}
             <div
               style={{
