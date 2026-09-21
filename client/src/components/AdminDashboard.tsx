@@ -57,7 +57,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [toastMsg, setToastMsg] = useState('');
   const [isExporting, setIsExporting] = useState<'csv' | 'excel' | 'pdf' | null>(null);
 
-  const { isOnline, isSyncing, pendingCount, triggerSync } = useNetworkStatus();
+  const { isOnline, pendingCount } = useNetworkStatus();
 
   // Check initial authentication
   useEffect(() => {
@@ -336,15 +336,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Calculate percentages for interest breakdown & source
   const totalLeadsCount = stats?.total || leads.length || 1;
-  const oilCount = stats?.interestCounts?.['Oil Spill Combat Team'] || 0;
-  const slickCount = stats?.interestCounts?.['Slickbar Oil Boom & Skimmer'] || stats?.interestCounts?.['Slickbar'] || 0;
-  const oilPercent = Math.round((oilCount / totalLeadsCount) * 100) || 50;
-  const slickPercent = Math.round((slickCount / totalLeadsCount) * 100) || 50;
+  const INTEREST_COLORS = ['#1f5c4a', '#b8933e', '#2f7d5c', '#0f2f3d', '#8a8371'];
+  const interestRows = Object.entries(stats?.interestCounts || {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, count], i) => ({
+      name,
+      percent: Math.round((count / totalLeadsCount) * 100),
+      color: INTEREST_COLORS[i % INTEREST_COLORS.length]
+    }));
 
   const kioskCount = stats?.sourceBreakdown?.kiosk_tablet || 0;
   const hpCount = stats?.sourceBreakdown?.mobile_qr || 0;
-  const kioskPercent = Math.round((kioskCount / totalLeadsCount) * 100) || 38;
-  const hpPercent = Math.round((hpCount / totalLeadsCount) * 100) || 62;
+  const kioskPercent = Math.round((kioskCount / totalLeadsCount) * 100);
+  const hpPercent = Math.round((hpCount / totalLeadsCount) * 100);
 
   // Determine top interest text
   let topInterestText = t.statBalanced;
@@ -396,14 +401,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+            gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
             gap: '14px'
           }}
         >
           {/* 1. Total Pengunjung */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#1f5c4a', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1, minHeight: '36px', display: 'flex', alignItems: 'center' }}>
               {stats?.total ?? leads.length}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -414,7 +419,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* 2. Hari Ini */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#b8933e', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1, minHeight: '36px', display: 'flex', alignItems: 'center' }}>
               {stats?.today ?? 0}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -425,7 +430,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* 3. Menunggu Sync */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#c9932e', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 7vw, 32px)', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.1, minHeight: '36px', display: 'flex', alignItems: 'center' }}>
               {pendingCount}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -436,7 +441,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* 4. Minat Terbanyak */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '18px 20px', border: '1px solid #e6e0cd' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2f7d5c', marginBottom: '10px' }} />
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 600, color: '#0f2f3d', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', lineHeight: 1.2, minHeight: '36px', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {topInterestText}
             </div>
             <div style={{ fontSize: '11.5px', color: '#8a8371', marginTop: '4px' }}>
@@ -449,7 +454,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.6fr) minmax(0, 1fr)',
+            gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) 320px',
             gap: '18px',
             alignItems: 'start'
           }}
@@ -682,33 +687,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
 
-          {/* RIGHT COLUMN: ANALYTICS & SYNC STATUS PANELS */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* RIGHT COLUMN: ANALYTICS PANELS (sticky so it stays in view on long tables) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: isMobile ? 'static' : 'sticky', top: '16px' }}>
             {/* Panel 1: Product Interest Breakdown */}
             <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', padding: '18px 20px' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', marginBottom: '14px' }}>
                 {t.interestPanelTitle}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
-                    <span>Oil Spill Combat Team</span>
-                    <span>{oilPercent}%</span>
-                  </div>
-                  <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
-                    <div style={{ height: '100%', width: `${oilPercent}%`, borderRadius: '4px', backgroundColor: '#1f5c4a' }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
-                    <span>Slickbar</span>
-                    <span>{slickPercent}%</span>
-                  </div>
-                  <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
-                    <div style={{ height: '100%', width: `${slickPercent}%`, borderRadius: '4px', backgroundColor: '#b8933e' }} />
-                  </div>
-                </div>
+                {interestRows.length === 0 ? (
+                  <div style={{ fontSize: '11.5px', color: '#8a8371' }}>-</div>
+                ) : (
+                  interestRows.map((row) => (
+                    <div key={row.name}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
+                        <span>{row.name}</span>
+                        <span style={{ flexShrink: 0 }}>{row.percent}%</span>
+                      </div>
+                      <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
+                        <div style={{ height: '100%', width: `${row.percent}%`, borderRadius: '4px', backgroundColor: row.color }} />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -738,55 +739,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Panel 3: Sync Status Panel (Dark Navy Card) */}
-            <div style={{ backgroundColor: '#0f2f3d', borderRadius: '14px', padding: '18px 20px', color: '#ffffff' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '12px' }}>
-                {t.syncStatusTitle}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', fontSize: '11.5px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: isOnline ? '#4fd18f' : '#f87171', display: 'inline-block' }} />
-                  <span>{isOnline ? t.syncConnected : t.syncDisconnected}</span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: pendingCount > 0 ? '#c9932e' : '#4fd18f', display: 'inline-block' }} />
-                  <span>{pendingCount} {t.syncPendingEntries}</span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#c9b896' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#c9b896', display: 'inline-block' }} />
-                  <span>{t.syncLastAuto} {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-              </div>
-
-              {/* Force Sync Button */}
-              <button
-                type="button"
-                onClick={triggerSync}
-                disabled={isSyncing}
-                style={{
-                  marginTop: '14px',
-                  width: '100%',
-                  padding: '9px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                  color: '#ffffff',
-                  fontSize: '11.5px',
-                  fontWeight: 600,
-                  cursor: isSyncing ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}
-              >
-                <RefreshCw size={13} className={isSyncing ? 'animate-spin' : ''} style={{ animation: isSyncing ? 'sa-spin 1s linear infinite' : 'none' }} />
-                <span>{isSyncing ? 'Syncing...' : t.forceSyncBtn}</span>
-              </button>
             </div>
           </div>
         </div>
