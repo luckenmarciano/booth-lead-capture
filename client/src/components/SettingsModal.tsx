@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   X,
   Save,
@@ -11,29 +11,27 @@ import {
   Building2,
   Calendar,
   Globe,
-  UploadCloud,
+  Upload,
   Film,
-  HardDrive,
   AlertCircle,
-  RefreshCw
+  Server
 } from 'lucide-react';
 import { BoothSettings } from '../types/lead';
-import { updateSettingsApi } from '../services/api';
+import { updateSettingsApi, uploadServerVideoApi, deleteServerVideoApi } from '../services/api';
 import { offlineDB } from '../services/db';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { formatFileSize } from '../services/videoManager';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentSettings: BoothSettings;
+  settings: BoothSettings;
   onSaveSettings: (newSettings: BoothSettings) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
-  currentSettings,
+  settings: currentSettings,
   onSaveSettings
 }) => {
   if (!isOpen) return null;
@@ -45,125 +43,101 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const isMobile = useIsMobile();
 
-  // Local Tablet Video State
-  const [videoSourceType, setVideoSourceType] = useState<'local' | 'url'>(
-    formData.video_source_type || (formData.video_local_name ? 'local' : (formData.video_url ? 'url' : 'local'))
-  );
-  const [localVideoMeta, setLocalVideoMeta] = useState<{
-    name: string;
-    size: number;
-    type: string;
-    updated_at?: string;
-  } | null>(null);
-  const [localVideoPreviewUrl, setLocalVideoPreviewUrl] = useState<string | null>(null);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
+  // Local video blob state
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const previewVideoRef = useRef<HTMLVideoElement>(null);
+  const [localVideoName, setLocalVideoName] = useState<string>('');
+  const [localVideoSize, setLocalVideoSize] = useState<number>(0);
+  const [blobSaveProgress, setBlobSaveProgress] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
+  const [storedBlobInfo, setStoredBlobInfo] = useState<{ name: string; size: number } | null>(null);
 
-  // Load existing local video blob on mount/open
+  // Load stored blob metadata from localStorage on mount
   useEffect(() => {
-    let activeUrl: string | null = null;
-    const loadSavedVideo = async () => {
-      try {
-        const media = await offlineDB.getVideoMedia();
-        if (media && media.blob) {
-          activeUrl = URL.createObjectURL(media.blob);
-          setLocalVideoPreviewUrl(activeUrl);
-          setLocalVideoMeta({
-            name: media.name,
-            size: media.size,
-            type: media.type,
-            updated_at: media.updated_at
-          });
-          if (!formData.video_local_name) {
-            setFormData((prev) => ({
-              ...prev,
-              video_local_name: media.name,
-              video_local_size: media.size
-            }));
-          }
-        }
-      } catch (err) {
-        console.warn('[SettingsModal] Error loading existing local video:', err);
-      }
-    };
-
-    if (isOpen) {
-      loadSavedVideo();
+    const raw = localStorage.getItem('local_video_meta');
+    if (raw) {
+      try { setStoredBlobInfo(JSON.parse(raw)); } catch {}
     }
+  }, []);
 
-    return () => {
-      if (activeUrl) {
-        URL.revokeObjectURL(activeUrl);
-      }
-    };
-  }, [isOpen]);
+  const LOCAL_BLOB_KEY = 'local_video_v1';
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validate video format
-    const isValidFormat =
-      file.type.startsWith('video/') ||
-      Boolean(file.name.match(/\.(mp4|webm|mov|mkv|avi|m4v)$/i));
-
-    if (!isValidFormat) {
-      setVideoUploadError('Format file tidak didukung. Harap pilih file video (MP4, WebM, MOV).');
-      return;
-    }
-
-    setIsUploadingVideo(true);
-    setVideoUploadError(null);
-
+    setLocalVideoName(file.name);
+    setLocalVideoSize(file.size);
+    setBlobSaveProgress('saving');
     try {
-      const res = await offlineDB.saveVideoMedia(file, file.name, file.type || 'video/mp4', file.size);
-      if (localVideoPreviewUrl) {
-        URL.revokeObjectURL(localVideoPreviewUrl);
-      }
-      const newUrl = URL.createObjectURL(file);
-      setLocalVideoPreviewUrl(newUrl);
-      setLocalVideoMeta({
-        name: res.name,
-        size: res.size,
-        type: res.type,
-        updated_at: new Date().toISOString()
-      });
-      setFormData((prev) => ({
-        ...prev,
-        video_source_type: 'local',
-        video_local_name: res.name,
-        video_local_size: res.size,
-        video_local_updated_at: new Date().toISOString()
-      }));
-      setVideoSourceType('local');
-    } catch (err) {
-      console.error('[SettingsModal] Error saving video file:', err);
-      setVideoUploadError('Gagal menyimpan file video ke penyimpanan tablet.');
-    } finally {
-      setIsUploadingVideo(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      await offlineDB.saveVideoBlob(LOCAL_BLOB_KEY, file);
+      const meta = { name: file.name, size: file.size };
+      localStorage.setItem('local_video_meta', JSON.stringify(meta));
+      setStoredBlobInfo(meta);
+      setFormData(prev => ({ ...prev, video_source: 'local', video_local_blob_key: LOCAL_BLOB_KEY }));
+      setBlobSaveProgress('done');
+    } catch {
+      setBlobSaveProgress('error');
     }
   };
 
-  const handleRemoveLocalVideo = async () => {
+  const handleDeleteLocalVideo = async () => {
+    await offlineDB.deleteVideoBlob(LOCAL_BLOB_KEY);
+    localStorage.removeItem('local_video_meta');
+    setStoredBlobInfo(null);
+    setLocalVideoName('');
+    setLocalVideoSize(0);
+    setBlobSaveProgress('idle');
+    setFormData(prev => ({ ...prev, video_source: 'url', video_local_blob_key: undefined }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Server-hosted video state
+  const serverFileInputRef = useRef<HTMLInputElement>(null);
+  const [serverUploadProgress, setServerUploadProgress] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
+  const [serverUploadError, setServerUploadError] = useState('');
+
+  const handleServerVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setServerUploadProgress('uploading');
+    setServerUploadError('');
     try {
-      await offlineDB.deleteVideoMedia();
-      if (localVideoPreviewUrl) {
-        URL.revokeObjectURL(localVideoPreviewUrl);
-        setLocalVideoPreviewUrl(null);
-      }
-      setLocalVideoMeta(null);
-      setFormData((prev) => ({
+      const pin = formData.admin_pin || currentSettings.admin_pin;
+      const result = await uploadServerVideoApi(file, pin);
+      setFormData(prev => ({
         ...prev,
-        video_local_name: '',
-        video_local_size: 0,
-        video_local_updated_at: undefined
+        video_source: 'server',
+        video_server_url: result.data.video_server_url,
+        video_server_original_name: result.data.video_server_original_name,
+        video_server_size: result.data.video_server_size
       }));
-    } catch (err) {
-      console.error('[SettingsModal] Error deleting video:', err);
+      setServerUploadProgress('done');
+    } catch (err: any) {
+      setServerUploadError(err.message || 'Gagal mengunggah video');
+      setServerUploadProgress('error');
     }
+  };
+
+  const handleDeleteServerVideo = async () => {
+    try {
+      const pin = formData.admin_pin || currentSettings.admin_pin;
+      await deleteServerVideoApi(pin);
+    } catch (err) {
+      console.error('[Settings] Failed to delete server video:', err);
+    }
+    setFormData(prev => ({
+      ...prev,
+      video_source: 'url',
+      video_server_url: undefined,
+      video_server_original_name: undefined,
+      video_server_size: undefined
+    }));
+    setServerUploadProgress('idle');
+    setServerUploadError('');
+    if (serverFileInputRef.current) serverFileInputRef.current.value = '';
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const handleAddInterest = () => {
@@ -185,10 +159,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     e.preventDefault();
     setIsSaving(true);
     try {
-      const dataToSave = {
-        ...formData,
-        video_source_type: videoSourceType
-      };
+      // Only keep the local blob key while local file mode is actually selected.
+      // Server-video fields (video_server_*) are intentionally left as-is when
+      // switching away from 'server' — the uploaded file stays on the server
+      // disk until explicitly deleted via the "Hapus" button.
+      const dataToSave: BoothSettings = { ...formData };
+      if (dataToSave.video_source !== 'local') {
+        dataToSave.video_local_blob_key = undefined;
+      }
       await offlineDB.saveSettingsLocally(dataToSave);
       try {
         // Server verifies the admin PIN before accepting settings changes.
@@ -424,255 +402,111 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <span>Putar video dengan suara</span>
                     </label>
                     <div style={{ fontSize: '10.5px', color: '#8a8371', marginTop: '4px' }}>
-                      Default tanpa suara. Suara paling andal saat screensaver dibuka lewat tombol Video di layar utama; jika muncul otomatis dari idle, sebagian browser membisukannya secara default (kebijakan autoplay).
+                      Default tanpa suara. Suara paling andal saat screensaver dibuka lewat tombol Video di layar utama; jika muncul otomatis dari idle, sebagian browser tetap membisukannya (aturan autoplay). Untuk file MP4/WebM hasilnya lebih konsisten dibanding YouTube.
                     </div>
                   </div>
 
-                  {/* Video Source Selector */}
-                  <div style={{ marginTop: '4px' }}>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '8px' }}>
-                      Pilih Sumber Video Screensaver
-                    </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
-                      {/* Option A: Tablet Storage */}
-                      <div
-                        onClick={() => {
-                          setVideoSourceType('local');
-                          setFormData((prev) => ({ ...prev, video_source_type: 'local' }));
-                        }}
+                  {/* Source Toggle */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '2px' }}>Sumber Video</div>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      {/* URL Option */}
+                      <label
                         style={{
+                          flex: '1 1 180px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
                           padding: '12px 14px',
                           borderRadius: '10px',
-                          border: videoSourceType === 'local' ? '2px solid #0f2f3d' : '1px solid #dcd7c5',
-                          backgroundColor: videoSourceType === 'local' ? 'rgba(15, 47, 61, 0.05)' : '#ffffff',
+                          border: `2px solid ${(formData.video_source ?? 'url') === 'url' ? '#1f5c4a' : '#e6e0cd'}`,
+                          backgroundColor: (formData.video_source ?? 'url') === 'url' ? '#f0f8f4' : '#ffffff',
                           cursor: 'pointer',
-                          transition: 'all 0.15s ease'
+                          transition: 'all 0.15s'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, fontSize: '12.5px', color: '#0f2f3d' }}>
-                            <HardDrive size={15} color="#0f2f3d" />
-                            <span>Penyimpanan Tablet</span>
-                          </div>
-                          <span style={{ fontSize: '9.5px', fontWeight: 700, backgroundColor: '#e2f0d9', color: '#2d6a4f', padding: '2px 6px', borderRadius: '4px' }}>
-                            OFFLINE
-                          </span>
-                        </div>
-                        <p style={{ fontSize: '11px', color: '#6b6455', margin: 0 }}>
-                          Pilih file video langsung dari memori/galeri tablet. 100% lancar tanpa butuh internet saat pameran.
-                        </p>
-                      </div>
-
-                      {/* Option B: Online URL */}
-                      <div
-                        onClick={() => {
-                          setVideoSourceType('url');
-                          setFormData((prev) => ({ ...prev, video_source_type: 'url' }));
-                        }}
-                        style={{
-                          padding: '12px 14px',
-                          borderRadius: '10px',
-                          border: videoSourceType === 'url' ? '2px solid #0f2f3d' : '1px solid #dcd7c5',
-                          backgroundColor: videoSourceType === 'url' ? 'rgba(15, 47, 61, 0.05)' : '#ffffff',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, fontSize: '12.5px', color: '#0f2f3d', marginBottom: '4px' }}>
-                          <Globe size={15} color="#0f2f3d" />
-                          <span>Link URL / YouTube</span>
-                        </div>
-                        <p style={{ fontSize: '11px', color: '#6b6455', margin: 0 }}>
-                          Gunakan tautan YouTube atau direct link MP4/WebM online (memerlukan koneksi internet aktif).
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* SOURCE 1: LOCAL TABLET FILE UPLOAD */}
-                  {videoSourceType === 'local' && (
-                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e0d9c4', borderRadius: '12px', padding: '16px' }}>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="video/mp4,video/webm,video/ogg,video/quicktime,video/*"
-                        style={{ display: 'none' }}
-                        onChange={handleFileChange}
-                      />
-
-                      {localVideoMeta && localVideoPreviewUrl ? (
+                        <input
+                          type="radio"
+                          name="video_source"
+                          value="url"
+                          checked={(formData.video_source ?? 'url') === 'url'}
+                          onChange={() => setFormData(prev => ({ ...prev, video_source: 'url' }))}
+                          style={{ accentColor: '#1f5c4a' }}
+                        />
+                        <Globe size={16} color="#1f5c4a" />
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <CheckCircle2 size={20} color="#2d6a4f" />
-                              <div>
-                                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f2f3d' }}>
-                                  Video Tersimpan di Tablet
-                                </div>
-                                <div style={{ fontSize: '11px', color: '#6b6455' }}>
-                                  {localVideoMeta.name} • {formatFileSize(localVideoMeta.size)}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                              <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploadingVideo}
-                                style={{
-                                  padding: '6px 12px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #c9c2b0',
-                                  backgroundColor: '#ffffff',
-                                  fontSize: '11.5px',
-                                  fontWeight: 600,
-                                  color: '#0f2f3d',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                              >
-                                <RefreshCw size={12} />
-                                <span>Ganti Video</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={handleRemoveLocalVideo}
-                                style={{
-                                  padding: '6px 12px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #f2c0bd',
-                                  backgroundColor: '#fff5f5',
-                                  fontSize: '11.5px',
-                                  fontWeight: 600,
-                                  color: '#c53030',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                              >
-                                <Trash2 size={12} />
-                                <span>Hapus</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Video Preview Player */}
-                          <div
-                            style={{
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              backgroundColor: '#0a1f29',
-                              position: 'relative',
-                              maxHeight: '220px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            <video
-                              ref={previewVideoRef}
-                              src={localVideoPreviewUrl}
-                              controls
-                              playsInline
-                              style={{ width: '100%', maxHeight: '220px', objectFit: 'contain' }}
-                            />
-                          </div>
-                          <div style={{ fontSize: '10.5px', color: '#2d6a4f', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span>✅ Video tersimpan di memori internal offline tablet dan siap diputar otomatis saat screensaver aktif.</span>
-                          </div>
+                          <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2f3d' }}>URL Online</div>
+                          <div style={{ fontSize: '10.5px', color: '#8a8371' }}>YouTube / Link MP4</div>
                         </div>
-                      ) : (
-                        <div
-                          onClick={() => fileInputRef.current?.click()}
-                          style={{
-                            border: '2px dashed #c4bc9f',
-                            borderRadius: '10px',
-                            padding: '24px 16px',
-                            textAlign: 'center',
-                            backgroundColor: '#faf8f2',
-                            cursor: isUploadingVideo ? 'wait' : 'pointer',
-                            transition: 'border-color 0.2s'
-                          }}
-                        >
-                          {isUploadingVideo ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                              <RefreshCw size={28} color="#0f2f3d" className="animate-spin" />
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f2f3d' }}>
-                                Menyimpan video ke memori tablet...
-                              </div>
-                              <div style={{ fontSize: '11px', color: '#6b6455' }}>
-                                Mohon tunggu beberapa saat
-                              </div>
-                            </div>
-                          ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                              <div
-                                style={{
-                                  width: '48px',
-                                  height: '48px',
-                                  borderRadius: '50%',
-                                  backgroundColor: 'rgba(15, 47, 61, 0.08)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: '#0f2f3d'
-                                }}
-                              >
-                                <UploadCloud size={24} />
-                              </div>
-                              <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0f2f3d' }}>
-                                Pilih File Video dari Tablet
-                              </div>
-                              <div style={{ fontSize: '11px', color: '#6b6455', maxWidth: '360px' }}>
-                                Sentuh di sini untuk membuka galeri / pengelola file tablet. Mendukung format MP4, WebM, atau MOV.
-                              </div>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  fileInputRef.current?.click();
-                                }}
-                                style={{
-                                  marginTop: '6px',
-                                  padding: '8px 16px',
-                                  borderRadius: '8px',
-                                  backgroundColor: '#0f2f3d',
-                                  color: '#ffffff',
-                                  fontSize: '12px',
-                                  fontWeight: 600,
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                <Film size={14} />
-                                <span>Buka File Video Tablet</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      </label>
 
-                      {videoUploadError && (
-                        <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#fff5f5', border: '1px solid #fed7d7', color: '#c53030', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <AlertCircle size={14} />
-                          <span>{videoUploadError}</span>
+                      {/* Local File Option */}
+                      <label
+                        style={{
+                          flex: '1 1 180px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '12px 14px',
+                          borderRadius: '10px',
+                          border: `2px solid ${formData.video_source === 'local' ? '#1f5c4a' : '#e6e0cd'}`,
+                          backgroundColor: formData.video_source === 'local' ? '#f0f8f4' : '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="video_source"
+                          value="local"
+                          checked={formData.video_source === 'local'}
+                          onChange={() => setFormData(prev => ({ ...prev, video_source: 'local' }))}
+                          style={{ accentColor: '#1f5c4a' }}
+                        />
+                        <Film size={16} color="#1f5c4a" />
+                        <div>
+                          <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2f3d' }}>File Lokal Perangkat</div>
+                          <div style={{ fontSize: '10.5px', color: '#8a8371' }}>MP4 / MKV dari tablet</div>
                         </div>
-                      )}
+                      </label>
+
+                      {/* Server Storage Option */}
+                      <label
+                        style={{
+                          flex: '1 1 180px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '12px 14px',
+                          borderRadius: '10px',
+                          border: `2px solid ${formData.video_source === 'server' ? '#1f5c4a' : '#e6e0cd'}`,
+                          backgroundColor: formData.video_source === 'server' ? '#f0f8f4' : '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="video_source"
+                          value="server"
+                          checked={formData.video_source === 'server'}
+                          onChange={() => setFormData(prev => ({ ...prev, video_source: 'server' }))}
+                          style={{ accentColor: '#1f5c4a' }}
+                        />
+                        <Server size={16} color="#1f5c4a" />
+                        <div>
+                          <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2f3d' }}>Simpan di Server</div>
+                          <div style={{ fontSize: '10.5px', color: '#8a8371' }}>Terpusat, otomatis ke semua tablet</div>
+                        </div>
+                      </label>
                     </div>
-                  )}
+                  </div>
 
-                  {/* SOURCE 2: ONLINE URL */}
-                  {videoSourceType === 'url' && (
+                  {/* URL Input — shown when source = url */}
+                  {(formData.video_source ?? 'url') === 'url' && (
                     <div>
                       <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
-                        URL Video Company Profile (YouTube / MP4 Web)
+                        URL Video Company Profile (YouTube / MP4 / WebM)
                       </label>
                       <input
                         type="url"
@@ -682,7 +516,229 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
                       />
                       <div style={{ fontSize: '10.5px', color: '#8a8371', marginTop: '4px' }}>
-                        Mendukung link YouTube (cth: https://youtu.be/... atau https://youtube.com/watch?v=...) serta file video langsung MP4/WebM online.
+                        Mendukung link YouTube (cth: https://youtu.be/... atau https://youtube.com/watch?v=...) serta file video langsung MP4/WebM.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Local File Picker — shown when source = local */}
+                  {formData.video_source === 'local' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {/* Already stored file info */}
+                      {storedBlobInfo && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '12px 14px',
+                            backgroundColor: '#f0f8f4',
+                            border: '1.5px solid #1f5c4a',
+                            borderRadius: '10px',
+                            gap: '10px',
+                            flexWrap: 'wrap'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Film size={20} color="#1f5c4a" />
+                            <div>
+                              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2f3d' }}>{storedBlobInfo.name}</div>
+                              <div style={{ fontSize: '11px', color: '#4a7c5c' }}>
+                                {formatBytes(storedBlobInfo.size)} · Tersimpan di perangkat ini
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleDeleteLocalVideo}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              padding: '7px 12px',
+                              borderRadius: '7px',
+                              border: '1px solid #f87171',
+                              backgroundColor: '#fff5f5',
+                              color: '#b91c1c',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Trash2 size={13} />
+                            Hapus
+                          </button>
+                        </div>
+                      )}
+
+                      {/* File Picker Button */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="video/mp4,video/webm,video/mkv,video/x-matroska,video/*"
+                        style={{ display: 'none' }}
+                        onChange={handleVideoFileChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          padding: '14px',
+                          borderRadius: '10px',
+                          border: '2px dashed #1f5c4a',
+                          backgroundColor: '#f8fdf9',
+                          color: '#1f5c4a',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          width: '100%',
+                          transition: 'background 0.15s'
+                        }}
+                      >
+                        <Upload size={18} />
+                        {storedBlobInfo ? 'Ganti Video Lokal' : 'Pilih Video dari Perangkat'}
+                      </button>
+
+                      {/* Save Progress */}
+                      {blobSaveProgress === 'saving' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#1f5c4a', fontWeight: 600 }}>
+                          <div style={{
+                            width: '16px', height: '16px', borderRadius: '50%',
+                            border: '2px solid #1f5c4a', borderTopColor: 'transparent',
+                            animation: 'sa-spin 0.7s linear infinite', flexShrink: 0
+                          }} />
+                          Menyimpan video ke perangkat... ({localVideoName && formatBytes(localVideoSize)})
+                        </div>
+                      )}
+                      {blobSaveProgress === 'done' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
+                          <CheckCircle2 size={15} /> Video berhasil disimpan! Bisa diputar offline.
+                        </div>
+                      )}
+                      {blobSaveProgress === 'error' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#b91c1c', fontWeight: 600 }}>
+                          <AlertCircle size={15} /> Gagal menyimpan. Coba file yang lebih kecil.
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: '10.5px', color: '#8a8371', lineHeight: 1.5, background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e6e0cd' }}>
+                        💡 <strong>Tips:</strong> Video disimpan langsung di memori tablet ini (IndexedDB). Tidak memerlukan koneksi internet untuk diputar. Maksimum ukuran file bergantung pada kapasitas storage browser (biasanya &gt;500 MB). Format terbaik: <strong>MP4 H.264</strong>.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Server Video Uploader — shown when source = server */}
+                  {formData.video_source === 'server' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {/* Already stored file info */}
+                      {formData.video_server_url && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '12px 14px',
+                            backgroundColor: '#f0f8f4',
+                            border: '1.5px solid #1f5c4a',
+                            borderRadius: '10px',
+                            gap: '10px',
+                            flexWrap: 'wrap'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Server size={20} color="#1f5c4a" />
+                            <div>
+                              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2f3d' }}>{formData.video_server_original_name}</div>
+                              <div style={{ fontSize: '11px', color: '#4a7c5c' }}>
+                                {formData.video_server_size ? formatBytes(formData.video_server_size) : ''} · Tersimpan di server, otomatis ke semua tablet
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleDeleteServerVideo}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              padding: '7px 12px',
+                              borderRadius: '7px',
+                              border: '1px solid #f87171',
+                              backgroundColor: '#fff5f5',
+                              color: '#b91c1c',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Trash2 size={13} />
+                            Hapus
+                          </button>
+                        </div>
+                      )}
+
+                      {/* File Picker Button */}
+                      <input
+                        ref={serverFileInputRef}
+                        type="file"
+                        accept="video/mp4,video/webm,video/mkv,video/x-matroska,video/*"
+                        style={{ display: 'none' }}
+                        onChange={handleServerVideoFileChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => serverFileInputRef.current?.click()}
+                        disabled={serverUploadProgress === 'uploading'}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          padding: '14px',
+                          borderRadius: '10px',
+                          border: '2px dashed #1f5c4a',
+                          backgroundColor: '#f8fdf9',
+                          color: '#1f5c4a',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: serverUploadProgress === 'uploading' ? 'not-allowed' : 'pointer',
+                          opacity: serverUploadProgress === 'uploading' ? 0.6 : 1,
+                          width: '100%',
+                          transition: 'background 0.15s'
+                        }}
+                      >
+                        <Upload size={18} />
+                        {formData.video_server_url ? 'Ganti Video Server' : 'Unggah Video ke Server'}
+                      </button>
+
+                      {/* Upload Progress */}
+                      {serverUploadProgress === 'uploading' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#1f5c4a', fontWeight: 600 }}>
+                          <div style={{
+                            width: '16px', height: '16px', borderRadius: '50%',
+                            border: '2px solid #1f5c4a', borderTopColor: 'transparent',
+                            animation: 'sa-spin 0.7s linear infinite', flexShrink: 0
+                          }} />
+                          Mengunggah video ke server... (bisa beberapa menit tergantung koneksi)
+                        </div>
+                      )}
+                      {serverUploadProgress === 'done' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
+                          <CheckCircle2 size={15} /> Video berhasil diunggah ke server!
+                        </div>
+                      )}
+                      {serverUploadProgress === 'error' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#b91c1c', fontWeight: 600 }}>
+                          <AlertCircle size={15} /> {serverUploadError || 'Gagal mengunggah video.'}
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: '10.5px', color: '#8a8371', lineHeight: 1.5, background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e6e0cd' }}>
+                        💡 <strong>Tips:</strong> Video disimpan di server pusat (VPS). Semua tablet & browser admin otomatis mendapatkan video terbaru tanpa perlu upload ulang. Maksimum ukuran file: <strong>200 MB</strong>. Format didukung: MP4, WebM, MKV, MOV.
                       </div>
                     </div>
                   )}

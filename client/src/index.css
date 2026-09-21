@@ -1,4 +1,4 @@
-﻿@charset "UTF-8";
+@charset "UTF-8";
 
 /* ==========================================================================
    SPILLASIA 2026 - LUXURY MINIMALIST EXHIBITION GUESTBOOK SYSTEM
@@ -350,4 +350,10 @@ html, body {
   .print-only {
     display: block !important;
   }
+}
+
+/* Spinner animation used for blob save progress */
+@keyframes sa-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

@@ -26,12 +26,13 @@ export interface BoothSettings {
   kiosk_venue?: string;
   date_range?: string;
   video_url: string;
+  video_source?: 'url' | 'local' | 'server'; // 'url' = YouTube/online link, 'local' = file from device, 'server' = file hosted on the VPS
+  video_local_blob_key?: string;   // key referencing the Blob stored in IndexedDB video_blobs store
+  video_server_url?: string;          // relative path served by the backend, e.g. '/settings/uploads/<uuid>.mp4'
+  video_server_original_name?: string; // original filename shown in the admin UI
+  video_server_size?: number;          // file size in bytes, shown in the admin UI
   video_enabled: boolean;
   video_sound_enabled?: boolean;
-  video_source_type?: 'local' | 'url';
-  video_local_name?: string;
-  video_local_size?: number;
-  video_local_updated_at?: string;
   idle_timeout_sec: number;
   default_interests: string[];
   gsheets_webhook_url: string;

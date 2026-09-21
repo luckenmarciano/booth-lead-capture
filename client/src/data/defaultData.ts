@@ -9,9 +9,6 @@ export const DEFAULT_SETTINGS: BoothSettings = {
   video_url: 'https://www.youtube.com/watch?v=xgznJcRRUOw',
   video_enabled: true,
   video_sound_enabled: false,
-  video_source_type: 'local',
-  video_local_name: '',
-  video_local_size: 0,
   idle_timeout_sec: 60,
   default_interests: [
     'Oil Spill Combat Team',

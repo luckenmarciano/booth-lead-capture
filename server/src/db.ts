@@ -27,12 +27,14 @@ export interface BoothSettings {
   kiosk_venue?: string;
   date_range?: string;
   video_url: string;
+  video_source?: 'url' | 'local' | 'server';
+  video_local_blob_key?: string;
+  video_server_url?: string;
+  video_server_filename?: string;
+  video_server_original_name?: string;
+  video_server_size?: number;
   video_enabled: boolean;
   video_sound_enabled?: boolean;
-  video_source_type?: 'local' | 'url';
-  video_local_name?: string;
-  video_local_size?: number;
-  video_local_updated_at?: string;
   idle_timeout_sec: number;
   default_interests: string[];
   gsheets_webhook_url: string;
@@ -53,7 +55,7 @@ export interface SyncLog {
   message: string;
 }
 
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+export const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const LEADS_FILE = path.join(DATA_DIR, 'leads.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const LOGS_FILE = path.join(DATA_DIR, 'sync_logs.json');

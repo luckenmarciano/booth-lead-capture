@@ -240,6 +240,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const openWhatsAppChat = (lead: Lead) => {
+    if (!lead.whatsapp?.trim()) return;
     let cleanPhone = lead.whatsapp.replace(/[^0-9]/g, '');
     if (cleanPhone.startsWith('0')) {
       cleanPhone = '62' + cleanPhone.substring(1);

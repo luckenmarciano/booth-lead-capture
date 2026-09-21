@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   X,
   User,
@@ -8,13 +8,11 @@ import {
   MapPin,
   Check,
   Send,
-  PenTool,
   Sparkles
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { BoothSettings, Lead, Language } from '../types/lead';
 import { syncService } from '../services/syncService';
-import { SignatureCanvas } from './SignatureCanvas';
 import { DICT } from '../data/dictionary';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -46,11 +44,22 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
     settings.default_interests[0] || 'Oil Spill Combat Team'
   ]);
   const [notes, setNotes] = useState('');
-  const [signatureUrl, setSignatureUrl] = useState('');
-  const [showSignature, setShowSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const isMobile = useIsMobile();
+
+  // settings starts as the bundled DEFAULT_SETTINGS and is replaced once the
+  // real settings finish loading from the server — if the visitor hasn't
+  // touched their interest selection yet, drop any stale default that no
+  // longer matches the current interest list so it doesn't linger alongside
+  // whatever the visitor actually picks.
+  useEffect(() => {
+    setSelectedInterests((prev) => {
+      const stillValid = prev.filter((i) => settings.default_interests.includes(i));
+      if (stillValid.length > 0) return stillValid;
+      return [settings.default_interests[0] || 'Oil Spill Combat Team'];
+    });
+  }, [settings.default_interests]);
 
   const toggleInterest = (interest: string) => {
     if (selectedInterests.includes(interest)) {
@@ -66,8 +75,8 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
       setErrorMsg(lang === 'id' ? 'Silakan isi Nama Lengkap' : 'Please enter your Full Name');
       return;
     }
-    if (!whatsapp.trim()) {
-      setErrorMsg(lang === 'id' ? 'Silakan isi Nomor WhatsApp' : 'Please enter your WhatsApp Number');
+    if (!email.trim()) {
+      setErrorMsg(lang === 'id' ? 'Silakan isi Alamat Email' : 'Please enter your Email Address');
       return;
     }
 
@@ -81,10 +90,9 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
         company: company.trim() || '-',
         city: city.trim() || 'Jakarta',
         whatsapp: whatsapp.trim(),
-        email: email.trim() || undefined,
+        email: email.trim(),
         interests: selectedInterests.length > 0 ? selectedInterests : [settings.default_interests[0] || 'Oil Spill Combat Team'],
         notes: notes.trim() || undefined,
-        signature_url: signatureUrl || undefined,
         source: 'kiosk_tablet' as const,
         booth_id: settings.booth_id
       };
@@ -249,7 +257,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
                   <Phone size={13} color="#2f7d5c" />
-                  <span>{t.labelContact} *</span>
+                  <span>{t.labelContact}</span>
                 </label>
                 <input
                   type="tel"
@@ -257,14 +265,13 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
                   placeholder={t.placeholderContact}
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  required
                 />
               </div>
 
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
                   <Mail size={13} color="#2f7d5c" />
-                  <span>{t.labelEmail}</span>
+                  <span>{t.labelEmail} *</span>
                 </label>
                 <input
                   type="email"
@@ -272,6 +279,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
                   placeholder={t.placeholderEmail}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -328,36 +336,6 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
-            </div>
-
-            {/* Tanda Tangan */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowSignature(!showSignature)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#1f5c4a',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  padding: '8px 2px',
-                  minHeight: '40px'
-                }}
-              >
-                <PenTool size={14} />
-                <span>{showSignature ? t.hideSignature : t.showSignature}</span>
-              </button>
-
-              {showSignature && (
-                <div style={{ marginTop: '8px' }}>
-                  <SignatureCanvas onSave={(url) => setSignatureUrl(url)} initialData={signatureUrl} />
-                </div>
-              )}
             </div>
 
             {/* Submit Button */}

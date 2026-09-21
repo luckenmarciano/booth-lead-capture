@@ -5,7 +5,7 @@ const DB_NAME = 'BoothLeadCaptureDB';
 const DB_VERSION = 2;
 const STORE_LEADS = 'leads';
 const STORE_SETTINGS = 'settings';
-const STORE_MEDIA = 'media';
+const STORE_VIDEO_BLOBS = 'video_blobs';
 
 class OfflineDB {
   private dbPromise: Promise<IDBDatabase> | null = null;
@@ -34,8 +34,8 @@ class OfflineDB {
         if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
           db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
         }
-        if (!db.objectStoreNames.contains(STORE_MEDIA)) {
-          db.createObjectStore(STORE_MEDIA, { keyPath: 'id' });
+        if (!db.objectStoreNames.contains(STORE_VIDEO_BLOBS)) {
+          db.createObjectStore(STORE_VIDEO_BLOBS, { keyPath: 'key' });
         }
       };
 
@@ -83,13 +83,15 @@ class OfflineDB {
         const request = store.getAll();
         request.onsuccess = () => {
           let list: Lead[] = request.result || [];
-          if (list.length === 0) {
-            // Seed initial sample leads for demo convenience
+          if (list.length === 0 && !localStorage.getItem('leads_seeded')) {
+            // Seed initial sample leads for demo convenience — only ever once,
+            // so leads the user deletes don't come back.
             list = SAMPLE_INITIAL_LEADS;
             for (const sample of SAMPLE_INITIAL_LEADS) {
               this.saveLeadLocally(sample);
             }
           }
+          localStorage.setItem('leads_seeded', '1');
           list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           resolve(list);
         };
@@ -98,7 +100,9 @@ class OfflineDB {
     } catch (err) {
       console.warn('[IndexedDB] Fallback localStorage getLeads:', err);
       const list = this.getLocalStorageLeads();
-      return list.length > 0 ? list : SAMPLE_INITIAL_LEADS;
+      if (list.length > 0 || localStorage.getItem('leads_seeded')) return list;
+      localStorage.setItem('leads_seeded', '1');
+      return SAMPLE_INITIAL_LEADS;
     }
   }
 
@@ -155,6 +159,59 @@ class OfflineDB {
     }
   }
 
+  // --- VIDEO BLOBS ---
+
+  /** Save a video Blob to IndexedDB under the given key (e.g. 'local_video_v1'). */
+  public async saveVideoBlob(key: string, blob: Blob): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_VIDEO_BLOBS, 'readwrite');
+        const store = tx.objectStore(STORE_VIDEO_BLOBS);
+        store.put({ key, blob, savedAt: new Date().toISOString() });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      console.warn('[IndexedDB] saveVideoBlob failed:', err);
+      throw err;
+    }
+  }
+
+  /** Retrieve a stored video Blob by key. Returns null if not found. */
+  public async getVideoBlob(key: string): Promise<Blob | null> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_VIDEO_BLOBS, 'readonly');
+        const store = tx.objectStore(STORE_VIDEO_BLOBS);
+        const req = store.get(key);
+        req.onsuccess = () => {
+          resolve(req.result ? (req.result.blob as Blob) : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  /** Delete a stored video Blob by key. */
+  public async deleteVideoBlob(key: string): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_VIDEO_BLOBS, 'readwrite');
+        const store = tx.objectStore(STORE_VIDEO_BLOBS);
+        store.delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      console.warn('[IndexedDB] deleteVideoBlob failed:', err);
+    }
+  }
+
   // --- SETTINGS ---
   public async saveSettingsLocally(settings: BoothSettings): Promise<void> {
     try {
@@ -201,85 +258,6 @@ class OfflineDB {
     } catch {
       return [];
     }
-  }
-
-  // --- MEDIA / LOCAL VIDEO STORAGE ---
-  public async saveVideoMedia(
-    file: Blob | File,
-    name: string,
-    type: string,
-    size: number
-  ): Promise<{ name: string; size: number; type: string }> {
-    const db = await this.getDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_MEDIA, 'readwrite');
-      const store = tx.objectStore(STORE_MEDIA);
-      const record = {
-        id: 'screensaver_video',
-        blob: file,
-        name: name || 'video.mp4',
-        type: type || 'video/mp4',
-        size: size || file.size,
-        updated_at: new Date().toISOString()
-      };
-      store.put(record);
-      tx.oncomplete = () => {
-        resolve({
-          name: record.name,
-          size: record.size,
-          type: record.type
-        });
-      };
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-
-  public async getVideoMedia(): Promise<{
-    blob: Blob;
-    name: string;
-    type: string;
-    size: number;
-    updated_at: string;
-  } | null> {
-    try {
-      const db = await this.getDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_MEDIA, 'readonly');
-        const store = tx.objectStore(STORE_MEDIA);
-        const req = store.get('screensaver_video');
-        req.onsuccess = () => {
-          if (req.result && req.result.blob) {
-            resolve(req.result);
-          } else {
-            resolve(null);
-          }
-        };
-        req.onerror = () => reject(req.error);
-      });
-    } catch (err) {
-      console.warn('[IndexedDB] getVideoMedia error:', err);
-      return null;
-    }
-  }
-
-  public async deleteVideoMedia(): Promise<void> {
-    try {
-      const db = await this.getDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_MEDIA, 'readwrite');
-        const store = tx.objectStore(STORE_MEDIA);
-        store.delete('screensaver_video');
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-      });
-    } catch (err) {
-      console.warn('[IndexedDB] deleteVideoMedia error:', err);
-    }
-  }
-
-  public async hasVideoMedia(): Promise<boolean> {
-    const media = await this.getVideoMedia();
-    return Boolean(media && media.blob);
   }
 }
 

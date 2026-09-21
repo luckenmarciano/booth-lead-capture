@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
-
 import { offlineDB } from '../services/db';
+import { resolveServerVideoUrl } from '../services/api';
 
 interface VideoScreensaverProps {
   settings: BoothSettings;
@@ -24,69 +24,52 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
 }) => {
   const t = DICT[lang];
   const [hasError, setHasError] = useState(false);
-  const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null);
-  const [isLoadingLocal, setIsLoadingLocal] = useState(
-    settings.video_source_type === 'local' || Boolean(settings.video_local_name)
-  );
   const videoRef = useRef<HTMLVideoElement>(null);
-  const currentBlobUrlRef = useRef<string | null>(null);
 
-  // Load local video blob from IndexedDB if requested or available
+  // Local blob URL (loaded from IndexedDB when video_source === 'local')
+  const [localBlobUrl, setLocalBlobUrl] = useState<string | null>(null);
+
   useEffect(() => {
-    let activeUrl: string | null = null;
-    let isMounted = true;
+    let objectUrl: string | null = null;
 
-    const loadLocal = async () => {
-      if (settings.video_source_type === 'url' && !settings.video_local_name) {
-        setIsLoadingLocal(false);
-        return;
-      }
-
-      try {
-        const media = await offlineDB.getVideoMedia();
-        if (media && media.blob && isMounted) {
-          activeUrl = URL.createObjectURL(media.blob);
-          currentBlobUrlRef.current = activeUrl;
-          setLocalVideoUrl(activeUrl);
+    const loadLocalBlob = async () => {
+      if (settings.video_source === 'local' && settings.video_local_blob_key) {
+        const blob = await offlineDB.getVideoBlob(settings.video_local_blob_key);
+        if (blob) {
+          objectUrl = URL.createObjectURL(blob);
+          setLocalBlobUrl(objectUrl);
         }
-      } catch (err) {
-        console.warn('[VideoScreensaver] Error loading local video blob:', err);
-      } finally {
-        if (isMounted) setIsLoadingLocal(false);
+      } else {
+        setLocalBlobUrl(null);
       }
     };
 
-    loadLocal();
+    loadLocalBlob();
 
     return () => {
-      isMounted = false;
-      if (activeUrl) {
-        URL.revokeObjectURL(activeUrl);
-      }
-      if (currentBlobUrlRef.current) {
-        URL.revokeObjectURL(currentBlobUrlRef.current);
-        currentBlobUrlRef.current = null;
-      }
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      setLocalBlobUrl(null);
     };
-  }, [settings.video_source_type, settings.video_local_name]);
-
-  // Determine effective video source
-  const isLocalSource = settings.video_source_type === 'local' || (Boolean(localVideoUrl) && !settings.video_url);
-  const effectiveUrl = (isLocalSource && localVideoUrl) ? localVideoUrl : (settings.video_url || localVideoUrl || '');
-  const isLocalPlayback = Boolean(localVideoUrl && effectiveUrl === localVideoUrl);
-
-  const youtubeId = useMemo(() => {
-    if (isLocalPlayback) return null;
-    return getYouTubeId(effectiveUrl);
-  }, [effectiveUrl, isLocalPlayback]);
+  }, [settings.video_source, settings.video_local_blob_key]);
 
   // Play with sound only if the booth opted in; otherwise muted.
   const soundOn = Boolean(settings.video_sound_enabled);
 
-  // When a real video can play, show ONLY the full-bleed video (no chrome).
-  const showVideo = !hasError && Boolean(effectiveUrl) && !isLoadingLocal;
+  const youtubeId = useMemo(() => getYouTubeId(settings.video_url), [settings.video_url]);
 
-  // For MP4/WebM/Local Blob: if the browser blocks unmuted autoplay, fall back to muted
+  const serverVideoUrl = settings.video_source === 'server' ? resolveServerVideoUrl(settings.video_server_url) : '';
+
+  // Priority: local blob > server-hosted file > online URL > fallback branded poster
+  const effectiveVideoSrc =
+    localBlobUrl ||
+    serverVideoUrl ||
+    (settings.video_source !== 'local' && settings.video_source !== 'server' ? settings.video_url : '');
+  const isDirectFile = Boolean(localBlobUrl) || settings.video_source === 'server';
+
+  // When a real video can play, show ONLY the full-bleed video (no chrome).
+  const showVideo = !hasError && Boolean(effectiveVideoSrc);
+
+  // For MP4/WebM: if the browser blocks unmuted autoplay, fall back to muted
   // playback so the screensaver never freezes on a black frame.
   useEffect(() => {
     const el = videoRef.current;
@@ -95,7 +78,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
       el.muted = true;
       el.play().catch(() => {});
     });
-  }, [showVideo, youtubeId, effectiveUrl]);
+  }, [showVideo, youtubeId, effectiveVideoSrc]);
 
   return (
     <div
@@ -117,7 +100,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
     >
       {showVideo ? (
         /* ── FULL-BLEED VIDEO ONLY — no header, text, buttons or overlay ── */
-        youtubeId ? (
+        youtubeId && !isDirectFile ? (
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=${soundOn ? 0 : 1}&loop=1&playlist=${youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
             title="Video Company Profile"
@@ -139,7 +122,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
         ) : (
           <video
             ref={videoRef}
-            src={effectiveUrl}
+            src={effectiveVideoSrc}
             autoPlay
             loop
             muted={!soundOn}

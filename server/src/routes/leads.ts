@@ -90,10 +90,10 @@ leadsRouter.post('/', async (req: Request, res: Response) => {
       booth_id
     } = req.body;
 
-    if (!full_name || !whatsapp) {
+    if (!full_name || !email) {
       return res.status(400).json({
         success: false,
-        error: 'Nama Lengkap dan Nomor WhatsApp wajib diisi'
+        error: 'Nama Lengkap dan Alamat Email wajib diisi'
       });
     }
 
@@ -106,8 +106,8 @@ leadsRouter.post('/', async (req: Request, res: Response) => {
       company: (company || '-').trim(),
       city: (city || 'Jakarta').trim(),
       job_title: (job_title || '').trim(),
-      whatsapp: whatsapp.trim(),
-      email: (email || '').trim(),
+      whatsapp: (whatsapp || '').trim(),
+      email: email.trim(),
       interests: Array.isArray(interests) ? interests : [],
       follow_up_pref: follow_up_pref || 'Kirim Brosur via WhatsApp',
       notes: (notes || '').trim(),

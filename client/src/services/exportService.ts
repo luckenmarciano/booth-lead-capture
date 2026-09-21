@@ -80,7 +80,6 @@ export const exportToExcel = async (
         'No',
         'Nama Lengkap',
         'Perusahaan',
-        'Jabatan',
         'Kota',
         'No. WhatsApp',
         'Email',
@@ -95,7 +94,6 @@ export const exportToExcel = async (
         'No',
         'Full Name',
         'Company',
-        'Job Title',
         'City',
         'WhatsApp',
         'Email',
@@ -111,7 +109,6 @@ export const exportToExcel = async (
     idx + 1,
     lead.full_name || '',
     lead.company || '',
-    lead.job_title || '',
     lead.city || '',
     lead.whatsapp || '',
     lead.email || '',
@@ -212,12 +209,12 @@ export const exportToPdf = async (
 
   // Table Headers
   const tableHeaders = isId
-    ? ['No', 'Nama', 'Perusahaan & Jabatan', 'Kontak (WA / Email)', 'Kota', 'Minat Produk', 'Sumber', 'Waktu']
-    : ['No', 'Name', 'Company & Job Title', 'Contact (WA / Email)', 'City', 'Product Interests', 'Source', 'Time'];
+    ? ['No', 'Nama', 'Perusahaan', 'Kontak (WA / Email)', 'Kota', 'Minat Produk', 'Sumber', 'Waktu']
+    : ['No', 'Name', 'Company', 'Contact (WA / Email)', 'City', 'Product Interests', 'Source', 'Time'];
 
   // Table Rows Data
   const tableRows = leads.map((lead, idx) => {
-    const companyJob = [lead.company, lead.job_title].filter(Boolean).join('\n') || '-';
+    const companyJob = lead.company || '-';
     const contact = [lead.whatsapp, lead.email].filter(Boolean).join('\n') || '-';
     const interests = (lead.interests || []).join(', ') || '-';
     const source = getSourceLabel(lead.source, lang);
@@ -265,7 +262,7 @@ export const exportToPdf = async (
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' }, // No
       1: { cellWidth: 38, fontStyle: 'bold' }, // Nama
-      2: { cellWidth: 44 }, // Perusahaan & Jabatan
+      2: { cellWidth: 44 }, // Perusahaan
       3: { cellWidth: 46 }, // Kontak
       4: { cellWidth: 26 }, // Kota
       5: { cellWidth: 50 }, // Minat Produk
@@ -313,7 +310,6 @@ export const exportToCsv = async (
     ? [
         'Nama Lengkap',
         'Perusahaan',
-        'Jabatan',
         'Kota',
         'WhatsApp',
         'Email',
@@ -327,7 +323,6 @@ export const exportToCsv = async (
     : [
         'Full Name',
         'Company',
-        'Job Title',
         'City',
         'WhatsApp',
         'Email',
@@ -344,7 +339,6 @@ export const exportToCsv = async (
   const rows = leads.map((l) => [
     l.full_name || '',
     l.company || '',
-    l.job_title || '',
     l.city || '',
     l.whatsapp || '',
     l.email || '',

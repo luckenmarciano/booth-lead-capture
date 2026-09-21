@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Building,
@@ -7,7 +7,6 @@ import {
   MapPin,
   Check,
   Send,
-  PenTool,
   CheckCircle2,
   RotateCcw,
   ArrowLeft
@@ -15,7 +14,6 @@ import {
 import confetti from 'canvas-confetti';
 import { BoothSettings, Lead, Language } from '../types/lead';
 import { syncService } from '../services/syncService';
-import { SignatureCanvas } from './SignatureCanvas';
 import { DICT } from '../data/dictionary';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -48,8 +46,19 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
     settings.default_interests[0] || 'Oil Spill Combat Team'
   ]);
   const [notes, setNotes] = useState('');
-  const [signatureUrl, setSignatureUrl] = useState('');
-  const [showSignature, setShowSignature] = useState(false);
+
+  // settings starts as the bundled DEFAULT_SETTINGS and is replaced once the
+  // real settings finish loading from the server — if the visitor hasn't
+  // touched their interest selection yet, drop any stale default that no
+  // longer matches the current interest list so it doesn't linger alongside
+  // whatever the visitor actually picks.
+  useEffect(() => {
+    setSelectedInterests((prev) => {
+      const stillValid = prev.filter((i) => settings.default_interests.includes(i));
+      if (stillValid.length > 0) return stillValid;
+      return [settings.default_interests[0] || 'Oil Spill Combat Team'];
+    });
+  }, [settings.default_interests]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -70,8 +79,8 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
       setErrorMsg(lang === 'id' ? 'Silakan isi Nama Lengkap Anda' : 'Please enter your Full Name');
       return;
     }
-    if (!whatsapp.trim()) {
-      setErrorMsg(lang === 'id' ? 'Silakan isi Nomor WhatsApp Anda' : 'Please enter your WhatsApp Number');
+    if (!email.trim()) {
+      setErrorMsg(lang === 'id' ? 'Silakan isi Alamat Email Anda' : 'Please enter your Email Address');
       return;
     }
 
@@ -85,10 +94,9 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
         company: company.trim() || '-',
         city: city.trim() || 'Jakarta',
         whatsapp: whatsapp.trim(),
-        email: email.trim() || undefined,
+        email: email.trim(),
         interests: selectedInterests.length > 0 ? selectedInterests : [settings.default_interests[0] || 'Oil Spill Combat Team'],
         notes: notes.trim() || undefined,
-        signature_url: signatureUrl || undefined,
         source: 'mobile_qr' as const,
         booth_id: settings.booth_id
       };
@@ -107,7 +115,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
         ...leadPayload,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        sync_status: result.status === 'synced' ? 'synced' : 'pending'
+        sync_status: result.synced ? 'synced' : 'pending'
       };
 
       setLastSubmittedLead(finalLead);
@@ -129,8 +137,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
     setCity('');
     setSelectedInterests([settings.default_interests[0] || 'Oil Spill Combat Team']);
     setNotes('');
-    setSignatureUrl('');
-    setShowSignature(false);
     setIsSubmitted(false);
     setLastSubmittedLead(null);
   };
@@ -420,7 +426,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
               </label>
               <input
                 type="tel"
-                required
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder={t.whatsappPlaceholder}
@@ -447,6 +452,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                 </label>
                 <input
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t.emailPlaceholder}
@@ -524,39 +530,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                   );
                 })}
               </div>
-            </div>
-
-            {/* 6. Tanda Tangan Digital (Opsional) */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowSignature(!showSignature)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: '8px 2px',
-                  minHeight: '40px',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  color: '#1f5c4a',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <PenTool size={14} />
-                <span>{showSignature ? t.sigToggleHide : t.sigToggleShow}</span>
-              </button>
-
-              {showSignature && (
-                <div style={{ marginTop: '8px' }}>
-                  <SignatureCanvas
-                    onSave={(url) => setSignatureUrl(url)}
-                    initialData={signatureUrl}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Tombol Submit */}
