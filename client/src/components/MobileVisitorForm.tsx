@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Building,
@@ -46,6 +46,19 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
     settings.default_interests[0] || 'Oil Spill Combat Team'
   ]);
   const [notes, setNotes] = useState('');
+
+  // settings starts as the bundled DEFAULT_SETTINGS and is replaced once the
+  // real settings finish loading from the server — if the visitor hasn't
+  // touched their interest selection yet, drop any stale default that no
+  // longer matches the current interest list so it doesn't linger alongside
+  // whatever the visitor actually picks.
+  useEffect(() => {
+    setSelectedInterests((prev) => {
+      const stillValid = prev.filter((i) => settings.default_interests.includes(i));
+      if (stillValid.length > 0) return stillValid;
+      return [settings.default_interests[0] || 'Oil Spill Combat Team'];
+    });
+  }, [settings.default_interests]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);

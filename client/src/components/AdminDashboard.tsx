@@ -184,7 +184,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // \u2500\u2500 Data Export (CSV / Excel / PDF) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   const EXPORT_HEADERS = [
-    'Full Name', 'Company', 'Job Title', 'City', 'WhatsApp', 'Email',
+    'Full Name', 'Company', 'City', 'WhatsApp', 'Email',
     'Product Interest', 'Source', 'Sync Status', 'Time'
   ];
 
@@ -195,7 +195,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     leads.map((l) => [
       l.full_name || '',
       l.company || '',
-      l.job_title || '',
       l.city || '',
       l.whatsapp || '',
       l.email || '',
