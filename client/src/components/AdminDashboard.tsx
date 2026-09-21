@@ -602,6 +602,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <td style={{ padding: '10px 16px' }}>
                             <span
                               style={{
+                                display: 'inline-block',
+                                whiteSpace: 'nowrap',
                                 padding: '3px 9px',
                                 borderRadius: '6px',
                                 fontSize: '10.5px',
@@ -616,6 +618,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <td style={{ padding: '10px 16px' }}>
                             <span
                               style={{
+                                display: 'inline-block',
+                                whiteSpace: 'nowrap',
                                 padding: '3px 9px',
                                 borderRadius: '6px',
                                 fontSize: '10.5px',
