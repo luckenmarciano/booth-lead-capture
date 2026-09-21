@@ -1,10 +1,11 @@
-﻿import { Lead, BoothSettings } from '../types/lead';
+import { Lead, BoothSettings } from '../types/lead';
 import { DEFAULT_SETTINGS, SAMPLE_INITIAL_LEADS } from '../data/defaultData';
 
 const DB_NAME = 'BoothLeadCaptureDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_LEADS = 'leads';
 const STORE_SETTINGS = 'settings';
+const STORE_VIDEO_BLOBS = 'video_blobs';
 
 class OfflineDB {
   private dbPromise: Promise<IDBDatabase> | null = null;
@@ -32,6 +33,9 @@ class OfflineDB {
         }
         if (!db.objectStoreNames.contains(STORE_SETTINGS)) {
           db.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+        }
+        if (!db.objectStoreNames.contains(STORE_VIDEO_BLOBS)) {
+          db.createObjectStore(STORE_VIDEO_BLOBS, { keyPath: 'key' });
         }
       };
 
@@ -148,6 +152,59 @@ class OfflineDB {
     } catch {
       const existing = this.getLocalStorageLeads().filter((l) => l.id !== id);
       localStorage.setItem('offline_leads', JSON.stringify(existing));
+    }
+  }
+
+  // --- VIDEO BLOBS ---
+
+  /** Save a video Blob to IndexedDB under the given key (e.g. 'local_video_v1'). */
+  public async saveVideoBlob(key: string, blob: Blob): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_VIDEO_BLOBS, 'readwrite');
+        const store = tx.objectStore(STORE_VIDEO_BLOBS);
+        store.put({ key, blob, savedAt: new Date().toISOString() });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      console.warn('[IndexedDB] saveVideoBlob failed:', err);
+      throw err;
+    }
+  }
+
+  /** Retrieve a stored video Blob by key. Returns null if not found. */
+  public async getVideoBlob(key: string): Promise<Blob | null> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_VIDEO_BLOBS, 'readonly');
+        const store = tx.objectStore(STORE_VIDEO_BLOBS);
+        const req = store.get(key);
+        req.onsuccess = () => {
+          resolve(req.result ? (req.result.blob as Blob) : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  /** Delete a stored video Blob by key. */
+  public async deleteVideoBlob(key: string): Promise<void> {
+    try {
+      const db = await this.getDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_VIDEO_BLOBS, 'readwrite');
+        const store = tx.objectStore(STORE_VIDEO_BLOBS);
+        store.delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      console.warn('[IndexedDB] deleteVideoBlob failed:', err);
     }
   }
 

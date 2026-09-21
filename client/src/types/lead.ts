@@ -26,6 +26,8 @@ export interface BoothSettings {
   kiosk_venue?: string;
   date_range?: string;
   video_url: string;
+  video_source?: 'url' | 'local'; // 'url' = YouTube/online link, 'local' = file from device
+  video_local_blob_key?: string;   // key referencing the Blob stored in IndexedDB video_blobs store
   video_enabled: boolean;
   video_sound_enabled?: boolean;
   idle_timeout_sec: number;

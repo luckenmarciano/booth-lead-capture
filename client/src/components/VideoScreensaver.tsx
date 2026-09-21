@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
+import { offlineDB } from '../services/db';
 
 interface VideoScreensaverProps {
   settings: BoothSettings;
@@ -24,13 +25,43 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
   const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Local blob URL (loaded from IndexedDB when video_source === 'local')
+  const [localBlobUrl, setLocalBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+
+    const loadLocalBlob = async () => {
+      if (settings.video_source === 'local' && settings.video_local_blob_key) {
+        const blob = await offlineDB.getVideoBlob(settings.video_local_blob_key);
+        if (blob) {
+          objectUrl = URL.createObjectURL(blob);
+          setLocalBlobUrl(objectUrl);
+        }
+      } else {
+        setLocalBlobUrl(null);
+      }
+    };
+
+    loadLocalBlob();
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      setLocalBlobUrl(null);
+    };
+  }, [settings.video_source, settings.video_local_blob_key]);
+
   // Play with sound only if the booth opted in; otherwise muted.
   const soundOn = Boolean(settings.video_sound_enabled);
 
   const youtubeId = useMemo(() => getYouTubeId(settings.video_url), [settings.video_url]);
 
+  // Priority: local blob > online URL > fallback branded poster
+  const effectiveVideoSrc = localBlobUrl ?? (settings.video_source !== 'local' ? settings.video_url : '');
+  const isLocalBlob = Boolean(localBlobUrl);
+
   // When a real video can play, show ONLY the full-bleed video (no chrome).
-  const showVideo = !hasError && Boolean(settings.video_url);
+  const showVideo = !hasError && Boolean(effectiveVideoSrc);
 
   // For MP4/WebM: if the browser blocks unmuted autoplay, fall back to muted
   // playback so the screensaver never freezes on a black frame.
@@ -41,7 +72,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
       el.muted = true;
       el.play().catch(() => {});
     });
-  }, [showVideo, youtubeId, settings.video_url]);
+  }, [showVideo, youtubeId, effectiveVideoSrc]);
 
   return (
     <div
@@ -63,7 +94,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
     >
       {showVideo ? (
         /* ── FULL-BLEED VIDEO ONLY — no header, text, buttons or overlay ── */
-        youtubeId ? (
+        youtubeId && !isLocalBlob ? (
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=${soundOn ? 0 : 1}&loop=1&playlist=${youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
             title="Video Company Profile"
@@ -85,7 +116,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
         ) : (
           <video
             ref={videoRef}
-            src={settings.video_url}
+            src={effectiveVideoSrc}
             autoPlay
             loop
             muted={!soundOn}
