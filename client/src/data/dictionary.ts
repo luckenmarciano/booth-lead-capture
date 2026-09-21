@@ -91,6 +91,8 @@ export interface TranslationDict {
   colName: string;
   colCompany: string;
   colCity: string;
+  colWhatsApp: string;
+  colEmail: string;
   colInterest: string;
   colSource: string;
   colSync: string;
@@ -221,6 +223,8 @@ export const DICT: Record<Language, TranslationDict> = {
     colName: 'Nama',
     colCompany: 'Perusahaan',
     colCity: 'Kota',
+    colWhatsApp: 'WhatsApp',
+    colEmail: 'Email',
     colInterest: 'Minat Produk',
     colSource: 'Sumber',
     colSync: 'Sync',
@@ -349,6 +353,8 @@ export const DICT: Record<Language, TranslationDict> = {
     colName: 'Name',
     colCompany: 'Company',
     colCity: 'City',
+    colWhatsApp: 'WhatsApp',
+    colEmail: 'Email',
     colInterest: 'Product Interest',
     colSource: 'Source',
     colSync: 'Sync',

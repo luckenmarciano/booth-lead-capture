@@ -561,12 +561,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Table */}
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', minWidth: '620px', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <table style={{ width: '100%', minWidth: '980px', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f4f0e3', textAlign: 'left' }}>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colName}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colCompany}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colCity}</th>
+                    <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colWhatsApp}</th>
+                    <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colEmail}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colInterest}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colSource}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colSync}</th>
@@ -576,7 +578,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <tbody>
                   {leads.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ padding: '32px 20px', textAlign: 'center', color: '#8a8371', fontSize: '13px' }}>
+                      <td colSpan={9} style={{ padding: '32px 20px', textAlign: 'center', color: '#8a8371', fontSize: '13px' }}>
                         {t.noData}
                       </td>
                     </tr>
@@ -600,6 +602,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </td>
                           <td style={{ padding: '10px 16px', color: '#4a453a' }}>
                             {row.city || 'Jakarta'}
+                          </td>
+                          <td style={{ padding: '10px 16px', color: '#4a453a', whiteSpace: 'nowrap' }}>
+                            {row.whatsapp || '-'}
+                          </td>
+                          <td style={{ padding: '10px 16px', color: '#4a453a', maxWidth: '210px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={row.email || undefined}>
+                            {row.email || '-'}
                           </td>
                           <td style={{ padding: '10px 16px', color: '#4a453a' }}>
                             {(row.interests || []).join(', ') || '-'}
@@ -641,6 +649,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               <button
                                 type="button"
                                 onClick={() => openWhatsAppChat(row)}
+                                disabled={!row.whatsapp?.trim()}
                                 title="Chat WhatsApp"
                                 style={{
                                   padding: '8px',
@@ -650,7 +659,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   border: 'none',
                                   backgroundColor: '#e4f0e9',
                                   color: '#1f5c4a',
-                                  cursor: 'pointer',
+                                  cursor: row.whatsapp?.trim() ? 'pointer' : 'not-allowed',
+                                  opacity: row.whatsapp?.trim() ? 1 : 0.4,
                                   display: 'flex',
                                   alignItems: 'center'
                                 }}
