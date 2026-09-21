@@ -450,16 +450,70 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
 
-        {/* MAIN 2-COLUMN SECTION */}
+        {/* MAIN SECTION: ANALYTICS ROW + FULL-WIDTH TABLE */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) 320px',
-            gap: '18px',
-            alignItems: 'start'
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '18px'
           }}
         >
-          {/* LEFT: REAL-TIME VISITOR DATA TABLE */}
+          {/* ANALYTICS PANELS (above the table) */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: '18px' }}>
+            {/* Panel 1: Product Interest Breakdown */}
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', padding: '18px 20px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', marginBottom: '14px' }}>
+                {t.interestPanelTitle}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {interestRows.length === 0 ? (
+                  <div style={{ fontSize: '11.5px', color: '#8a8371' }}>-</div>
+                ) : (
+                  interestRows.map((row) => (
+                    <div key={row.name}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
+                        <span>{row.name}</span>
+                        <span style={{ flexShrink: 0 }}>{row.percent}%</span>
+                      </div>
+                      <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
+                        <div style={{ height: '100%', width: `${row.percent}%`, borderRadius: '4px', backgroundColor: row.color }} />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Panel 2: Data Source Breakdown */}
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', padding: '18px 20px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', marginBottom: '14px' }}>
+                {t.sourcePanelTitle}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
+                    <span>{t.sourceKioskLabel}</span>
+                    <span>{kioskPercent}%</span>
+                  </div>
+                  <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
+                    <div style={{ height: '100%', width: `${kioskPercent}%`, borderRadius: '4px', backgroundColor: '#2f7d5c' }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
+                    <span>{t.sourceHpLabel}</span>
+                    <span>{hpPercent}%</span>
+                  </div>
+                  <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
+                    <div style={{ height: '100%', width: `${hpPercent}%`, borderRadius: '4px', backgroundColor: '#0f2f3d' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* REAL-TIME VISITOR DATA TABLE (full width) */}
           <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', overflow: 'hidden' }}>
             {/* Header & Controls */}
             <div
@@ -561,14 +615,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Table */}
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', minWidth: '980px', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <table style={{ width: '100%', minWidth: '760px', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f4f0e3', textAlign: 'left' }}>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colName}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colCompany}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colCity}</th>
-                    <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colWhatsApp}</th>
-                    <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colEmail}</th>
+                    <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colContact}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colInterest}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colSource}</th>
                     <th style={{ padding: '10px 16px', fontSize: '10.5px', letterSpacing: '0.4px', textTransform: 'uppercase', color: '#8a8371' }}>{t.colSync}</th>
@@ -578,7 +631,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <tbody>
                   {leads.length === 0 ? (
                     <tr>
-                      <td colSpan={9} style={{ padding: '32px 20px', textAlign: 'center', color: '#8a8371', fontSize: '13px' }}>
+                      <td colSpan={8} style={{ padding: '32px 20px', textAlign: 'center', color: '#8a8371', fontSize: '13px' }}>
                         {t.noData}
                       </td>
                     </tr>
@@ -603,11 +656,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <td style={{ padding: '10px 16px', color: '#4a453a' }}>
                             {row.city || 'Jakarta'}
                           </td>
-                          <td style={{ padding: '10px 16px', color: '#4a453a', whiteSpace: 'nowrap' }}>
-                            {row.whatsapp || '-'}
-                          </td>
-                          <td style={{ padding: '10px 16px', color: '#4a453a', maxWidth: '210px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={row.email || undefined}>
-                            {row.email || '-'}
+                          <td style={{ padding: '10px 16px', maxWidth: '230px' }}>
+                            {row.whatsapp || row.email ? (
+                              <>
+                                {row.whatsapp && (
+                                  <div style={{ color: '#1c2b28', whiteSpace: 'nowrap' }}>{row.whatsapp}</div>
+                                )}
+                                {row.email && (
+                                  <div
+                                    title={row.email}
+                                    style={{ color: '#8a8371', fontSize: '11px', marginTop: row.whatsapp ? '2px' : 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                                  >
+                                    {row.email}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <span style={{ color: '#8a8371' }}>-</span>
+                            )}
                           </td>
                           <td style={{ padding: '10px 16px', color: '#4a453a' }}>
                             {(row.interests || []).join(', ') || '-'}
@@ -694,61 +760,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: ANALYTICS PANELS (sticky so it stays in view on long tables) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: isMobile ? 'static' : 'sticky', top: '16px' }}>
-            {/* Panel 1: Product Interest Breakdown */}
-            <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', padding: '18px 20px' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', marginBottom: '14px' }}>
-                {t.interestPanelTitle}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {interestRows.length === 0 ? (
-                  <div style={{ fontSize: '11.5px', color: '#8a8371' }}>-</div>
-                ) : (
-                  interestRows.map((row) => (
-                    <div key={row.name}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
-                        <span>{row.name}</span>
-                        <span style={{ flexShrink: 0 }}>{row.percent}%</span>
-                      </div>
-                      <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
-                        <div style={{ height: '100%', width: `${row.percent}%`, borderRadius: '4px', backgroundColor: row.color }} />
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Panel 2: Data Source Breakdown */}
-            <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', border: '1px solid #e6e0cd', padding: '18px 20px' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em', color: '#0f2f3d', marginBottom: '14px' }}>
-                {t.sourcePanelTitle}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
-                    <span>{t.sourceKioskLabel}</span>
-                    <span>{kioskPercent}%</span>
-                  </div>
-                  <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
-                    <div style={{ height: '100%', width: `${kioskPercent}%`, borderRadius: '4px', backgroundColor: '#2f7d5c' }} />
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', color: '#4a453a', marginBottom: '5px' }}>
-                    <span>{t.sourceHpLabel}</span>
-                    <span>{hpPercent}%</span>
-                  </div>
-                  <div style={{ height: '7px', borderRadius: '4px', backgroundColor: '#f0ead8' }}>
-                    <div style={{ height: '100%', width: `${hpPercent}%`, borderRadius: '4px', backgroundColor: '#0f2f3d' }} />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
