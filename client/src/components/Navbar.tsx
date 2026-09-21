@@ -109,6 +109,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             borderRadius: '50%'
           }}
         />
+        <img
+          src="/sli-logo.png"
+          alt="SLICKBAR"
+          style={{
+            width: '40px',
+            height: '40px',
+            objectFit: 'contain',
+            flex: 'none',
+            background: '#ffffff',
+            borderRadius: '50%'
+          }}
+        />
         <div>
           <div
             style={{

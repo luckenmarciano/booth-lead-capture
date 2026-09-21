@@ -189,17 +189,36 @@ export const QRStandeeGenerator: React.FC<QRStandeeGeneratorProps> = ({
 
         {/* Header Branding */}
         <div>
-          <img
-            src="/osct-logo.png"
-            alt="Oil Spill Combat Team"
+          <div
             style={{
-              width: '54px',
-              height: '54px',
-              objectFit: 'contain',
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
               margin: '0 auto 12px'
             }}
-          />
+          >
+            <img
+              src="/osct-logo.png"
+              alt="Oil Spill Combat Team"
+              style={{
+                width: '54px',
+                height: '54px',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
+            <img
+              src="/sli-logo.png"
+              alt="SLICKBAR"
+              style={{
+                width: '54px',
+                height: '54px',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
+          </div>
 
           <div
             style={{

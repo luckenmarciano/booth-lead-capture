@@ -89,6 +89,16 @@ export const KioskHome: React.FC<KioskHomeProps> = ({
               flexShrink: 0
             }}
           />
+          <img
+            src="/sli-logo.png"
+            alt="SLICKBAR"
+            style={{
+              width: '42px',
+              height: '42px',
+              objectFit: 'contain',
+              flexShrink: 0
+            }}
+          />
           <div>
             <div
               style={{
