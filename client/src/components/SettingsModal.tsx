@@ -13,10 +13,11 @@ import {
   Globe,
   Upload,
   Film,
-  AlertCircle
+  AlertCircle,
+  Server
 } from 'lucide-react';
 import { BoothSettings } from '../types/lead';
-import { updateSettingsApi } from '../services/api';
+import { updateSettingsApi, uploadServerVideoApi, deleteServerVideoApi } from '../services/api';
 import { offlineDB } from '../services/db';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -88,6 +89,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // Server-hosted video state
+  const serverFileInputRef = useRef<HTMLInputElement>(null);
+  const [serverUploadProgress, setServerUploadProgress] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
+  const [serverUploadError, setServerUploadError] = useState('');
+
+  const handleServerVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setServerUploadProgress('uploading');
+    setServerUploadError('');
+    try {
+      const pin = formData.admin_pin || currentSettings.admin_pin;
+      const result = await uploadServerVideoApi(file, pin);
+      setFormData(prev => ({
+        ...prev,
+        video_source: 'server',
+        video_server_url: result.data.video_server_url,
+        video_server_original_name: result.data.video_server_original_name,
+        video_server_size: result.data.video_server_size
+      }));
+      setServerUploadProgress('done');
+    } catch (err: any) {
+      setServerUploadError(err.message || 'Gagal mengunggah video');
+      setServerUploadProgress('error');
+    }
+  };
+
+  const handleDeleteServerVideo = async () => {
+    try {
+      const pin = formData.admin_pin || currentSettings.admin_pin;
+      await deleteServerVideoApi(pin);
+    } catch (err) {
+      console.error('[Settings] Failed to delete server video:', err);
+    }
+    setFormData(prev => ({
+      ...prev,
+      video_source: 'url',
+      video_server_url: undefined,
+      video_server_original_name: undefined,
+      video_server_size: undefined
+    }));
+    setServerUploadProgress('idle');
+    setServerUploadError('');
+    if (serverFileInputRef.current) serverFileInputRef.current.value = '';
+  };
+
   const formatBytes = (bytes: number) => {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -112,10 +159,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     e.preventDefault();
     setIsSaving(true);
     try {
-      // If source switched back to URL, clear local blob key
-      const dataToSave = formData.video_source === 'url'
-        ? { ...formData, video_local_blob_key: undefined }
-        : formData;
+      // Only keep the local blob key while local file mode is actually selected.
+      // Server-video fields (video_server_*) are intentionally left as-is when
+      // switching away from 'server' — the uploaded file stays on the server
+      // disk until explicitly deleted via the "Hapus" button.
+      const dataToSave: BoothSettings = { ...formData };
+      if (dataToSave.video_source !== 'local') {
+        dataToSave.video_local_blob_key = undefined;
+      }
       await offlineDB.saveSettingsLocally(dataToSave);
       try {
         // Server verifies the admin PIN before accepting settings changes.
@@ -418,6 +469,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           <div style={{ fontSize: '10.5px', color: '#8a8371' }}>MP4 / MKV dari tablet</div>
                         </div>
                       </label>
+
+                      {/* Server Storage Option */}
+                      <label
+                        style={{
+                          flex: '1 1 180px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '12px 14px',
+                          borderRadius: '10px',
+                          border: `2px solid ${formData.video_source === 'server' ? '#1f5c4a' : '#e6e0cd'}`,
+                          backgroundColor: formData.video_source === 'server' ? '#f0f8f4' : '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="video_source"
+                          value="server"
+                          checked={formData.video_source === 'server'}
+                          onChange={() => setFormData(prev => ({ ...prev, video_source: 'server' }))}
+                          style={{ accentColor: '#1f5c4a' }}
+                        />
+                        <Server size={16} color="#1f5c4a" />
+                        <div>
+                          <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2f3d' }}>Simpan di Server</div>
+                          <div style={{ fontSize: '10.5px', color: '#8a8371' }}>Terpusat, otomatis ke semua tablet</div>
+                        </div>
+                      </label>
                     </div>
                   </div>
 
@@ -546,6 +627,118 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                       <div style={{ fontSize: '10.5px', color: '#8a8371', lineHeight: 1.5, background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e6e0cd' }}>
                         💡 <strong>Tips:</strong> Video disimpan langsung di memori tablet ini (IndexedDB). Tidak memerlukan koneksi internet untuk diputar. Maksimum ukuran file bergantung pada kapasitas storage browser (biasanya &gt;500 MB). Format terbaik: <strong>MP4 H.264</strong>.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Server Video Uploader — shown when source = server */}
+                  {formData.video_source === 'server' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {/* Already stored file info */}
+                      {formData.video_server_url && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '12px 14px',
+                            backgroundColor: '#f0f8f4',
+                            border: '1.5px solid #1f5c4a',
+                            borderRadius: '10px',
+                            gap: '10px',
+                            flexWrap: 'wrap'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Server size={20} color="#1f5c4a" />
+                            <div>
+                              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0f2f3d' }}>{formData.video_server_original_name}</div>
+                              <div style={{ fontSize: '11px', color: '#4a7c5c' }}>
+                                {formData.video_server_size ? formatBytes(formData.video_server_size) : ''} · Tersimpan di server, otomatis ke semua tablet
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleDeleteServerVideo}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              padding: '7px 12px',
+                              borderRadius: '7px',
+                              border: '1px solid #f87171',
+                              backgroundColor: '#fff5f5',
+                              color: '#b91c1c',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <Trash2 size={13} />
+                            Hapus
+                          </button>
+                        </div>
+                      )}
+
+                      {/* File Picker Button */}
+                      <input
+                        ref={serverFileInputRef}
+                        type="file"
+                        accept="video/mp4,video/webm,video/mkv,video/x-matroska,video/*"
+                        style={{ display: 'none' }}
+                        onChange={handleServerVideoFileChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => serverFileInputRef.current?.click()}
+                        disabled={serverUploadProgress === 'uploading'}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          padding: '14px',
+                          borderRadius: '10px',
+                          border: '2px dashed #1f5c4a',
+                          backgroundColor: '#f8fdf9',
+                          color: '#1f5c4a',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: serverUploadProgress === 'uploading' ? 'not-allowed' : 'pointer',
+                          opacity: serverUploadProgress === 'uploading' ? 0.6 : 1,
+                          width: '100%',
+                          transition: 'background 0.15s'
+                        }}
+                      >
+                        <Upload size={18} />
+                        {formData.video_server_url ? 'Ganti Video Server' : 'Unggah Video ke Server'}
+                      </button>
+
+                      {/* Upload Progress */}
+                      {serverUploadProgress === 'uploading' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#1f5c4a', fontWeight: 600 }}>
+                          <div style={{
+                            width: '16px', height: '16px', borderRadius: '50%',
+                            border: '2px solid #1f5c4a', borderTopColor: 'transparent',
+                            animation: 'sa-spin 0.7s linear infinite', flexShrink: 0
+                          }} />
+                          Mengunggah video ke server... (bisa beberapa menit tergantung koneksi)
+                        </div>
+                      )}
+                      {serverUploadProgress === 'done' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
+                          <CheckCircle2 size={15} /> Video berhasil diunggah ke server!
+                        </div>
+                      )}
+                      {serverUploadProgress === 'error' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#b91c1c', fontWeight: 600 }}>
+                          <AlertCircle size={15} /> {serverUploadError || 'Gagal mengunggah video.'}
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: '10.5px', color: '#8a8371', lineHeight: 1.5, background: '#ffffff', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e6e0cd' }}>
+                        💡 <strong>Tips:</strong> Video disimpan di server pusat (VPS). Semua tablet & browser admin otomatis mendapatkan video terbaru tanpa perlu upload ulang. Maksimum ukuran file: <strong>200 MB</strong>. Format didukung: MP4, WebM, MKV, MOV.
                       </div>
                     </div>
                   )}

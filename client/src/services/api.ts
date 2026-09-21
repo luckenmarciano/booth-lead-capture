@@ -100,6 +100,46 @@ export async function updateSettingsApi(settings: Partial<BoothSettings>, provid
   return res.json();
 }
 
+export async function uploadServerVideoApi(file: File, providedPin?: string): Promise<{ success: boolean; data: BoothSettings }> {
+  const base = getApiBaseUrl();
+  const formData = new FormData();
+  formData.append('video', file);
+  formData.append('provided_pin', providedPin || '');
+
+  const res = await fetch(`${base}/settings/video`, {
+    method: 'POST',
+    body: formData
+    // No explicit Content-Type — the browser sets multipart/form-data with
+    // the correct boundary. No short timeout either: a large video upload
+    // over venue WiFi can legitimately take minutes.
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || `HTTP error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deleteServerVideoApi(providedPin?: string): Promise<{ success: boolean; data: BoothSettings }> {
+  const base = getApiBaseUrl();
+  const res = await fetch(`${base}/settings/video`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provided_pin: providedPin }),
+    signal: AbortSignal.timeout(8000)
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || `HTTP error ${res.status}`);
+  }
+  return res.json();
+}
+
+export function resolveServerVideoUrl(relativePath?: string): string {
+  if (!relativePath) return '';
+  return `${getApiBaseUrl()}${relativePath}`;
+}
+
 export async function verifyAdminPinApi(pin: string): Promise<boolean> {
   try {
     const base = getApiBaseUrl();

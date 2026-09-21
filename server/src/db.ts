@@ -27,6 +27,12 @@ export interface BoothSettings {
   kiosk_venue?: string;
   date_range?: string;
   video_url: string;
+  video_source?: 'url' | 'local' | 'server';
+  video_local_blob_key?: string;
+  video_server_url?: string;
+  video_server_filename?: string;
+  video_server_original_name?: string;
+  video_server_size?: number;
   video_enabled: boolean;
   video_sound_enabled?: boolean;
   idle_timeout_sec: number;
@@ -49,7 +55,7 @@ export interface SyncLog {
   message: string;
 }
 
-const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+export const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const LEADS_FILE = path.join(DATA_DIR, 'leads.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const LOGS_FILE = path.join(DATA_DIR, 'sync_logs.json');

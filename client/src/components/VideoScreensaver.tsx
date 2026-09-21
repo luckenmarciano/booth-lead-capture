@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BoothSettings, Language } from '../types/lead';
 import { DICT } from '../data/dictionary';
 import { offlineDB } from '../services/db';
+import { resolveServerVideoUrl } from '../services/api';
 
 interface VideoScreensaverProps {
   settings: BoothSettings;
@@ -56,9 +57,14 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
 
   const youtubeId = useMemo(() => getYouTubeId(settings.video_url), [settings.video_url]);
 
-  // Priority: local blob > online URL > fallback branded poster
-  const effectiveVideoSrc = localBlobUrl ?? (settings.video_source !== 'local' ? settings.video_url : '');
-  const isLocalBlob = Boolean(localBlobUrl);
+  const serverVideoUrl = settings.video_source === 'server' ? resolveServerVideoUrl(settings.video_server_url) : '';
+
+  // Priority: local blob > server-hosted file > online URL > fallback branded poster
+  const effectiveVideoSrc =
+    localBlobUrl ||
+    serverVideoUrl ||
+    (settings.video_source !== 'local' && settings.video_source !== 'server' ? settings.video_url : '');
+  const isDirectFile = Boolean(localBlobUrl) || settings.video_source === 'server';
 
   // When a real video can play, show ONLY the full-bleed video (no chrome).
   const showVideo = !hasError && Boolean(effectiveVideoSrc);
@@ -94,7 +100,7 @@ export const VideoScreensaver: React.FC<VideoScreensaverProps> = ({
     >
       {showVideo ? (
         /* ── FULL-BLEED VIDEO ONLY — no header, text, buttons or overlay ── */
-        youtubeId && !isLocalBlob ? (
+        youtubeId && !isDirectFile ? (
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=${soundOn ? 0 : 1}&loop=1&playlist=${youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
             title="Video Company Profile"
