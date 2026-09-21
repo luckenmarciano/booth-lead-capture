@@ -7,7 +7,6 @@ import {
   MapPin,
   Check,
   Send,
-  PenTool,
   CheckCircle2,
   RotateCcw,
   ArrowLeft
@@ -15,7 +14,6 @@ import {
 import confetti from 'canvas-confetti';
 import { BoothSettings, Lead, Language } from '../types/lead';
 import { syncService } from '../services/syncService';
-import { SignatureCanvas } from './SignatureCanvas';
 import { DICT } from '../data/dictionary';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -48,8 +46,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
     settings.default_interests[0] || 'Oil Spill Combat Team'
   ]);
   const [notes, setNotes] = useState('');
-  const [signatureUrl, setSignatureUrl] = useState('');
-  const [showSignature, setShowSignature] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -88,7 +84,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
         email: email.trim(),
         interests: selectedInterests.length > 0 ? selectedInterests : [settings.default_interests[0] || 'Oil Spill Combat Team'],
         notes: notes.trim() || undefined,
-        signature_url: signatureUrl || undefined,
         source: 'mobile_qr' as const,
         booth_id: settings.booth_id
       };
@@ -129,8 +124,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
     setCity('');
     setSelectedInterests([settings.default_interests[0] || 'Oil Spill Combat Team']);
     setNotes('');
-    setSignatureUrl('');
-    setShowSignature(false);
     setIsSubmitted(false);
     setLastSubmittedLead(null);
   };
@@ -524,39 +517,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                   );
                 })}
               </div>
-            </div>
-
-            {/* 6. Tanda Tangan Digital (Opsional) */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowSignature(!showSignature)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: '8px 2px',
-                  minHeight: '40px',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  color: '#1f5c4a',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <PenTool size={14} />
-                <span>{showSignature ? t.sigToggleHide : t.sigToggleShow}</span>
-              </button>
-
-              {showSignature && (
-                <div style={{ marginTop: '8px' }}>
-                  <SignatureCanvas
-                    onSave={(url) => setSignatureUrl(url)}
-                    initialData={signatureUrl}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Tombol Submit */}
