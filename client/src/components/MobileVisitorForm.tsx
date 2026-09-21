@@ -102,7 +102,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
         ...leadPayload,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        sync_status: result.status === 'synced' ? 'synced' : 'pending'
+        sync_status: result.synced ? 'synced' : 'pending'
       };
 
       setLastSubmittedLead(finalLead);
