@@ -83,13 +83,15 @@ class OfflineDB {
         const request = store.getAll();
         request.onsuccess = () => {
           let list: Lead[] = request.result || [];
-          if (list.length === 0) {
-            // Seed initial sample leads for demo convenience
+          if (list.length === 0 && !localStorage.getItem('leads_seeded')) {
+            // Seed initial sample leads for demo convenience — only ever once,
+            // so leads the user deletes don't come back.
             list = SAMPLE_INITIAL_LEADS;
             for (const sample of SAMPLE_INITIAL_LEADS) {
               this.saveLeadLocally(sample);
             }
           }
+          localStorage.setItem('leads_seeded', '1');
           list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           resolve(list);
         };
@@ -98,7 +100,9 @@ class OfflineDB {
     } catch (err) {
       console.warn('[IndexedDB] Fallback localStorage getLeads:', err);
       const list = this.getLocalStorageLeads();
-      return list.length > 0 ? list : SAMPLE_INITIAL_LEADS;
+      if (list.length > 0 || localStorage.getItem('leads_seeded')) return list;
+      localStorage.setItem('leads_seeded', '1');
+      return SAMPLE_INITIAL_LEADS;
     }
   }
 

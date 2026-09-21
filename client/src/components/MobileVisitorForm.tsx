@@ -70,8 +70,8 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
       setErrorMsg(lang === 'id' ? 'Silakan isi Nama Lengkap Anda' : 'Please enter your Full Name');
       return;
     }
-    if (!whatsapp.trim()) {
-      setErrorMsg(lang === 'id' ? 'Silakan isi Nomor WhatsApp Anda' : 'Please enter your WhatsApp Number');
+    if (!email.trim()) {
+      setErrorMsg(lang === 'id' ? 'Silakan isi Alamat Email Anda' : 'Please enter your Email Address');
       return;
     }
 
@@ -85,7 +85,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
         company: company.trim() || '-',
         city: city.trim() || 'Jakarta',
         whatsapp: whatsapp.trim(),
-        email: email.trim() || undefined,
+        email: email.trim(),
         interests: selectedInterests.length > 0 ? selectedInterests : [settings.default_interests[0] || 'Oil Spill Combat Team'],
         notes: notes.trim() || undefined,
         signature_url: signatureUrl || undefined,
@@ -420,7 +420,6 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
               </label>
               <input
                 type="tel"
-                required
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder={t.whatsappPlaceholder}
@@ -447,6 +446,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
                 </label>
                 <input
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t.emailPlaceholder}

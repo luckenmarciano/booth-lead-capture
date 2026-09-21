@@ -66,8 +66,8 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
       setErrorMsg(lang === 'id' ? 'Silakan isi Nama Lengkap' : 'Please enter your Full Name');
       return;
     }
-    if (!whatsapp.trim()) {
-      setErrorMsg(lang === 'id' ? 'Silakan isi Nomor WhatsApp' : 'Please enter your WhatsApp Number');
+    if (!email.trim()) {
+      setErrorMsg(lang === 'id' ? 'Silakan isi Alamat Email' : 'Please enter your Email Address');
       return;
     }
 
@@ -81,7 +81,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
         company: company.trim() || '-',
         city: city.trim() || 'Jakarta',
         whatsapp: whatsapp.trim(),
-        email: email.trim() || undefined,
+        email: email.trim(),
         interests: selectedInterests.length > 0 ? selectedInterests : [settings.default_interests[0] || 'Oil Spill Combat Team'],
         notes: notes.trim() || undefined,
         signature_url: signatureUrl || undefined,
@@ -249,7 +249,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
                   <Phone size={13} color="#2f7d5c" />
-                  <span>{t.labelContact} *</span>
+                  <span>{t.labelContact}</span>
                 </label>
                 <input
                   type="tel"
@@ -257,14 +257,13 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
                   placeholder={t.placeholderContact}
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  required
                 />
               </div>
 
               <div>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: 600, color: '#0f2f3d', marginBottom: '6px' }}>
                   <Mail size={13} color="#2f7d5c" />
-                  <span>{t.labelEmail}</span>
+                  <span>{t.labelEmail} *</span>
                 </label>
                 <input
                   type="email"
@@ -272,6 +271,7 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
                   placeholder={t.placeholderEmail}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
