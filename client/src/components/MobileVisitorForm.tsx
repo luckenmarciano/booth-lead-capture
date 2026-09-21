@@ -175,11 +175,11 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            flexWrap: 'wrap',
+            flexWrap: 'nowrap',
             gap: '10px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
             {/* Back Button */}
             {onBack && (
               <button
@@ -235,6 +235,8 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
             <div
               style={{
                 display: 'inline-flex',
+                flexShrink: 0,
+                marginLeft: 'auto',
                 backgroundColor: 'rgba(255, 255, 255, 0.15)',
                 backdropFilter: 'blur(8px)',
                 padding: '2px',
@@ -534,6 +536,32 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
               </div>
             </div>
 
+            {/* 6. Catatan / Pertanyaan */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#0f2f3d', marginBottom: '6px' }}>
+                {t.labelNotes}
+              </label>
+              <textarea
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t.placeholderNotes}
+                style={{
+                  width: '100%',
+                  padding: '11px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid #dcd5be',
+                  backgroundColor: '#ffffff',
+                  fontSize: '12.5px',
+                  color: '#0f2f3d',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
+
             {/* Tombol Submit */}
             <button
               type="submit"
@@ -566,7 +594,7 @@ export const MobileVisitorForm: React.FC<MobileVisitorFormProps> = ({
 
       {/* Footer Branding */}
       <div style={{ marginTop: '16px', fontSize: '11px', color: '#8a8371', textAlign: 'center' }}>
-        {settings.company_name} • {settings.kiosk_venue}
+        OSCT - SLICKBAR • {settings.company_name} • {settings.kiosk_venue}
       </div>
     </div>
   );
