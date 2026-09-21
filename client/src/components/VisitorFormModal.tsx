@@ -8,13 +8,11 @@ import {
   MapPin,
   Check,
   Send,
-  PenTool,
   Sparkles
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { BoothSettings, Lead, Language } from '../types/lead';
 import { syncService } from '../services/syncService';
-import { SignatureCanvas } from './SignatureCanvas';
 import { DICT } from '../data/dictionary';
 import { useIsMobile } from '../hooks/useIsMobile';
 
@@ -46,8 +44,6 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
     settings.default_interests[0] || 'Oil Spill Combat Team'
   ]);
   const [notes, setNotes] = useState('');
-  const [signatureUrl, setSignatureUrl] = useState('');
-  const [showSignature, setShowSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const isMobile = useIsMobile();
@@ -84,7 +80,6 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
         email: email.trim(),
         interests: selectedInterests.length > 0 ? selectedInterests : [settings.default_interests[0] || 'Oil Spill Combat Team'],
         notes: notes.trim() || undefined,
-        signature_url: signatureUrl || undefined,
         source: 'kiosk_tablet' as const,
         booth_id: settings.booth_id
       };
@@ -328,36 +323,6 @@ export const VisitorFormModal: React.FC<VisitorFormModalProps> = ({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
-            </div>
-
-            {/* Tanda Tangan */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowSignature(!showSignature)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#1f5c4a',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  padding: '8px 2px',
-                  minHeight: '40px'
-                }}
-              >
-                <PenTool size={14} />
-                <span>{showSignature ? t.hideSignature : t.showSignature}</span>
-              </button>
-
-              {showSignature && (
-                <div style={{ marginTop: '8px' }}>
-                  <SignatureCanvas onSave={(url) => setSignatureUrl(url)} initialData={signatureUrl} />
-                </div>
-              )}
             </div>
 
             {/* Submit Button */}
